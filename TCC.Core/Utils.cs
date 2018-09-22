@@ -18,26 +18,23 @@ namespace TCC
 {
     public static class Utils
     {
-        private static MemoryStream ms;
 
         public static BitmapImage BitmapToImageSource(System.Drawing.Bitmap bitmap)
         {
-            //using (MemoryStream memory = new MemoryStream())
-            //{
-            ms = new MemoryStream();
-            bitmap.Save(ms, System.Drawing.Imaging.ImageFormat.Bmp);
-            ms.Position = 0;
-            var bitmapimage = new BitmapImage();
-            bitmapimage.BeginInit();
-            bitmapimage.StreamSource = ms;
-            bitmapimage.CacheOption = BitmapCacheOption.OnLoad;
-            bitmapimage.EndInit();
-            ms.Flush();
-            ms.Close();
-            ms.Dispose();
-            ms = null;
-            return bitmapimage;
-            //}
+            using (var ms = new MemoryStream())
+            {
+                bitmap.Save(ms, System.Drawing.Imaging.ImageFormat.Bmp);
+                ms.Position = 0;
+                var bitmapimage = new BitmapImage();
+                bitmapimage.BeginInit();
+                bitmapimage.StreamSource = ms;
+                bitmapimage.CacheOption = BitmapCacheOption.OnLoad;
+                bitmapimage.EndInit();
+                ms.Flush();
+                ms.Close();
+                ms.Dispose();
+                return bitmapimage;
+            }
         }
 
         public static Point GetRelativePoint(double x, double y, double cx, double cy)
@@ -198,9 +195,9 @@ namespace TCC
         }
 
         public static ICollectionViewLiveShaping InitLiveView<T>(Predicate<object> predicate, IEnumerable<T> source,
-            string[] filters, string[] sortFilters)
+            string[] filters, SortDescription[] sortFilters)
         {
-            var cv = new CollectionViewSource {Source = source}.View;
+            var cv = new CollectionViewSource { Source = source }.View;
             cv.Filter = predicate;
             var liveView = cv as ICollectionViewLiveShaping;
             if (!liveView.CanChangeLiveFiltering) return null;
@@ -218,8 +215,7 @@ namespace TCC
             {
                 foreach (var filter in sortFilters)
                 {
-                    (liveView as ICollectionView).SortDescriptions.Add(new SortDescription(filter,
-                        ListSortDirection.Ascending));
+                    (liveView as ICollectionView).SortDescriptions.Add(filter);
                 }
 
                 liveView.IsLiveSorting = true;
@@ -228,6 +224,7 @@ namespace TCC
             return liveView;
         }
     }
+
 
     public static class EventUtils
     {
@@ -303,6 +300,7 @@ namespace TCC
         public event PropertyChangedEventHandler PropertyChanged;
         protected void NPC([CallerMemberName] string v = null)
         {
+            if (_dispatcher == null) SetDispatcher(App.BaseDispatcher);
             _dispatcher.InvokeIfRequired(() =>
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(v)), DispatcherPriority.DataBind);
         }

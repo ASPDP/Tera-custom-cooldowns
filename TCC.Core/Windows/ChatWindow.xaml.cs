@@ -1,18 +1,13 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
-using System.Windows.Shell;
 using Dragablz;
 using GongSolutions.Wpf.DragDrop.Utilities;
-using TCC.Annotations;
-using TCC.Controls.ChatControls;
-using TCC.Data;
 using TCC.ViewModels;
 
 namespace TCC.Windows
@@ -91,9 +86,9 @@ namespace TCC.Windows
                 ((ChatWindowSettings)WindowSettings).Tabs.AddRange(VM.Tabs);
                 ((ChatWindowSettings)WindowSettings).LfgOn = VM.LfgOn;
                 ((ChatWindowSettings)WindowSettings).BackgroundOpacity = VM.BackgroundOpacity;
-                ((ChatWindowSettings)WindowSettings).X = Left / SettingsManager.ScreenW;
-                ((ChatWindowSettings)WindowSettings).Y = Top / SettingsManager.ScreenH;
-                var v = SettingsManager.ChatWindowsSettings;
+                ((ChatWindowSettings)WindowSettings).X = Left / TCC.Settings.ScreenW;
+                ((ChatWindowSettings)WindowSettings).Y = Top / TCC.Settings.ScreenH;
+                var v = TCC.Settings.ChatWindowsSettings;
                 var s = v.FirstOrDefault(x => x == WindowSettings);
                 if (s == null) v.Add(WindowSettings as ChatWindowSettings);
                 else s = WindowSettings as ChatWindowSettings;
@@ -164,12 +159,33 @@ namespace TCC.Windows
         {
             if (!(sender is FrameworkElement s) || !(s.DataContext is HeaderedItemViewModel t)) return;
             ((Tab)t.Content).Attention = false;
-            ((ChatViewModel)DataContext).CurrentTab = (Tab)t.Content;
+            if (((ChatViewModel)DataContext).CurrentTab != (Tab)t.Content)
+            {
+                ((ChatViewModel)DataContext).CurrentTab = (Tab)t.Content;
+            }
+            else
+            {
 
+                var n = ((Tab)t.Content).TabName;
+                TabControl.GetVisualDescendents<ItemsControl>().ToList().ForEach(x =>
+                {
+                    var sw = Utils.GetChild<ScrollViewer>(x);
+                    sw?.ScrollToVerticalOffset(0);
+                });
+                _bottom = true;
+                ChatWindowManager.Instance.AddFromQueue(2);
+                if (ChatWindowManager.Instance.IsQueueEmpty) ChatWindowManager.Instance.SetPaused(false);
+                ChatWindowManager.Instance.SetPaused(!_bottom);
+
+
+            }
             var w = s.ActualWidth;
             var left = s.TransformToAncestor(this).Transform(new Point()).X;
-            LeftLine.Width = left - 3;
-            RightLine.Margin = new Thickness(left + w - 3, 0, 0, 0);
+            if (left - 3 > 0)
+            {
+                LeftLine.Width = left - 3;
+                RightLine.Margin = new Thickness(left + w - 3, 0, 0, 0);
+            }
         }
 
         private void TabLoaded(object sender, RoutedEventArgs e)
@@ -185,8 +201,8 @@ namespace TCC.Windows
             if ((p as ItemsControl).ItemsSource.TryGetList().IndexOf(s.DataContext) != 0) return;
             var w = s.ActualWidth;
             var left = s.TransformToAncestor(this).Transform(new Point()).X;
-            LeftLine.Width = left - 3;
-            RightLine.Margin = new Thickness(left + w - 3, 0, 0, 0);
+            if (left - 3 >= 0) LeftLine.Width = left - 3;
+            if (left + w - 3 >= 0) RightLine.Margin = new Thickness(left + w - 3, 0, 0, 0);
 
         }
 
@@ -356,11 +372,11 @@ namespace TCC.Windows
             //var msg = (sender as FrameworkElement).DataContext as ChatMessage;
             //var tabVm = VM.TabVMs.FirstOrDefault(x =>
             //    ((Tab)x.Content).Messages.Contains(msg) && x == currTabVm);
-            if (currTabVm?.Content != null) ((Tab) currTabVm?.Content).PinnedMessage = null;
+            if (currTabVm?.Content != null) ((Tab)currTabVm?.Content).PinnedMessage = null;
 
             //var tab = VM.Tabs.FirstOrDefault(x => 
-                //x.PinnedMessage == (((sender as FrameworkElement)?.DataContext as HeaderedItemViewModel)?.Content as Tab)?.PinnedMessage
-                //);
+            //x.PinnedMessage == (((sender as FrameworkElement)?.DataContext as HeaderedItemViewModel)?.Content as Tab)?.PinnedMessage
+            //);
             //if (tab != null) tab.PinnedMessage = null;
         }
 
@@ -372,6 +388,16 @@ namespace TCC.Windows
         private void PinnedMessageOnContextMenuOpening(object sender, ContextMenuEventArgs e)
         {
             FocusManager.FocusTimer.Enabled = false;
+        }
+
+        private void OnScrollToBottomRequested()
+        {
+
+        }
+
+        private void MakeGlobal(object sender, RoutedEventArgs e)
+        {
+            WindowSettings.MakePositionsGlobal();
         }
     }
 

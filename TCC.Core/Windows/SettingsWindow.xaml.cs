@@ -4,6 +4,7 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media.Animation;
+using TCC.ViewModels;
 
 namespace TCC.Windows
 {
@@ -33,7 +34,7 @@ namespace TCC.Windows
 
         private void Image_MouseLeftButtonDown(object sender, RoutedEventArgs routedEventArgs)
         {
-            SettingsManager.SaveSettings();
+            SettingsWriter.Save();
             HideWindow();
         }
 
@@ -98,6 +99,69 @@ namespace TCC.Windows
         private void ButtonBase_OnClick(object sender, RoutedEventArgs e)
         {
             WindowManager.GroupAbnormalConfigWindow.ShowWindow();
+        }
+
+        private void MakePositionsGlobal(object sender, RoutedEventArgs e)
+        {
+            WindowManager.MakeGlobal();
+        }
+
+        private void WindowPositionsReset(object sender, RoutedEventArgs e)
+        {
+            WindowManager.ResetToCenter();
+        }
+
+        private void UIElement_OnMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            Process.Start("https://essentialmana.com/dreadspire-4/");
+        }
+
+        private void ResetCharacterWindowPosition(object sender, RoutedEventArgs e)
+        {
+            WindowManager.CharacterWindow.ResetToCenter();
+        }
+
+        private void ResetBossWindowPosition(object sender, RoutedEventArgs e)
+        {
+            WindowManager.BossWindow.ResetToCenter();
+        }
+
+        private void ResetCooldownWindowPosition(object sender, RoutedEventArgs e)
+        {
+            WindowManager.CooldownWindow.ResetToCenter();
+        }
+
+        private void ResetChatWindowsPosition(object sender, RoutedEventArgs e)
+        {
+            foreach (var cw in ChatWindowManager.Instance.ChatWindows)
+            {
+                cw.ResetToCenter();
+            }
+        }
+
+        private void ResetBuffWindowPosition(object sender, RoutedEventArgs e)
+        {
+            WindowManager.BuffWindow.ResetToCenter();
+        }
+
+        private void ResetClassWindowPosition(object sender, RoutedEventArgs e)
+        {
+            WindowManager.ClassWindow.ResetToCenter();
+        }
+
+        private void ResetGroupWindowPosition(object sender, RoutedEventArgs e)
+        {
+            WindowManager.GroupWindow.ResetToCenter();
+        }
+
+        private void ResetFlightGaugePosition(object sender, RoutedEventArgs e)
+        {
+            WindowManager.FlightDurationWindow.ResetToCenter();
+        }
+
+        private void ResetCuWindowPosition(object sender, RoutedEventArgs e)
+        {
+            WindowManager.CivilUnrestWindow.ResetToCenter();
         }
     }
 }

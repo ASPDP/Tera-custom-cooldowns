@@ -1,5 +1,5 @@
-﻿using TCC.Data;
-using TCC.Data.Databases;
+﻿using TCC.ClassSpecific;
+using TCC.Data;
 
 namespace TCC.ViewModels
 {
@@ -7,25 +7,26 @@ namespace TCC.ViewModels
     {
 
         public DurationCooldownIndicator InColdBlood { get; set; }
+        
         public FixedSkillCooldown OverhandStrike { get; set; }
+        
         public SlayerBarManager() : base()
         {
+            AbnormalityTracker  = new SlayerAbnormalityTracker();
         }
 
         public override void LoadSpecialSkills()
         {
+            // In Cold Blood
             SessionManager.SkillsDatabase.TryGetSkill(200200, Class.Slayer, out var icb);
+            InColdBlood = new DurationCooldownIndicator(_dispatcher) {
+                Buff = new FixedSkillCooldown(icb, false),
+                Cooldown = new FixedSkillCooldown(icb, true)
+            };
+
+            // Overhand Strike
             SessionManager.SkillsDatabase.TryGetSkill(80900, Class.Slayer, out var ohs);
-
-            InColdBlood =
-                new DurationCooldownIndicator(_dispatcher)
-                {
-                    Buff = new FixedSkillCooldown(icb, false),
-                    Cooldown = new FixedSkillCooldown(icb, true)
-                };
-
-            OverhandStrike =
-                new FixedSkillCooldown(ohs, false);
+            OverhandStrike = new FixedSkillCooldown(ohs, false);
 
         }
 
@@ -41,6 +42,7 @@ namespace TCC.ViewModels
                 OverhandStrike.Start(sk.Cooldown);
                 return true;
             }
+            
             return false;
         }
     }

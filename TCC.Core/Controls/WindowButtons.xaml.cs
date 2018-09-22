@@ -1,5 +1,4 @@
-﻿using System;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -71,6 +70,11 @@ namespace TCC.Controls
         private void AutoDim(object sender, RoutedEventArgs e)
         {
             _dc.AutoDim = !_dc.AutoDim;
+        }
+
+        private void MakeGlobal(object sender, RoutedEventArgs e)
+        {
+            _dc.MakePositionsGlobal();
         }
     }
 }

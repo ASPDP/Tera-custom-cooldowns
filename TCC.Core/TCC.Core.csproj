@@ -89,16 +89,20 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="AbnormalityManager.cs" />
-    <Compile Include="ClassSpecific\Berserker.cs" />
-    <Compile Include="ClassSpecific\Archer.cs" />
-    <Compile Include="ClassSpecific\Brawler.cs" />
-    <Compile Include="ClassSpecific\Lancer.cs" />
-    <Compile Include="ClassSpecific\Ninja.cs" />
-    <Compile Include="ClassSpecific\Priest.cs" />
-    <Compile Include="ClassSpecific\Reaper.cs" />
-    <Compile Include="ClassSpecific\Slayer.cs" />
-    <Compile Include="ClassSpecific\Sorcerer.cs" />
-    <Compile Include="ClassSpecific\Valkyrie.cs" />
+    <Compile Include="Converters\BossToLaurelConverter.cs" />
+    <Compile Include="Parsing\Messages\S_VIEW_WARE_EX.cs" />
+    <Compile Include="ViewModels\CivilUnrestViewModel.cs" />
+    <Compile Include="ClassSpecific\BerserkerAbnormalityTracker.cs" />
+    <Compile Include="ClassSpecific\ArcherAbnormalityTracker.cs" />
+    <Compile Include="ClassSpecific\BrawlerAbnormalityTracker.cs" />
+    <Compile Include="ClassSpecific\ClassAbnormalityTracker.cs" />
+    <Compile Include="ClassSpecific\LancerAbnormalityTracker.cs" />
+    <Compile Include="ClassSpecific\NinjaAbnormalityTracker.cs" />
+    <Compile Include="ClassSpecific\PriestAbnormalityTracker.cs" />
+    <Compile Include="ClassSpecific\ReaperAbnormalityTracker.cs" />
+    <Compile Include="ClassSpecific\SlayerAbnormalityTracker.cs" />
+    <Compile Include="ClassSpecific\SorcererAbnormalityTracker.cs" />
+    <Compile Include="ClassSpecific\ValkyrieAbnormalityTracker.cs" />
     <Compile Include="Controls\ChatControls\EmojiMessagePiece.xaml.cs">
       <DependentUpon>EmojiMessagePiece.xaml</DependentUpon>
     </Compile>
@@ -285,10 +289,12 @@
     <Compile Include="Data\StanceTracker.cs" />
     <Compile Include="Data\World.cs" />
     <Compile Include="Data\DungeonCooldown.cs" />
+    <Compile Include="FlyingGuardianDataProvider.cs" />
     <Compile Include="ForegroundManager.cs" />
     <Compile Include="HotKey.cs" />
     <Compile Include="KeyboardHook.cs" />
     <Compile Include="MoongourdManager.cs" />
+    <Compile Include="Parsing\CityWarGuildInfo.cs" />
     <Compile Include="Parsing\Messages\C_LOGIN_ARBITER.cs" />
     <Compile Include="Parsing\Messages\S_ABNORMALITY_DAMAGE_ABSORB.cs" />
     <Compile Include="Parsing\Messages\S_ACCOMPLISH_ACHIEVEMENT.cs" />
@@ -297,6 +303,7 @@
     <Compile Include="Parsing\Messages\S_ANSWER_INTERACTIVE.cs" />
     <Compile Include="Parsing\Messages\S_AVAILABLE_EVENT_MATCHING_LIST.cs" />
     <Compile Include="Parsing\Messages\S_BAN_PARTY.cs" />
+    <Compile Include="Parsing\Messages\S_DESTROY_GUILD_TOWER.cs" />
     <Compile Include="Parsing\Messages\S_DUNGEON_CLEAR_COUNT_LIST.cs" />
     <Compile Include="Parsing\Messages\S_DUNGEON_COOL_TIME_LIST.cs" />
     <Compile Include="Parsing\Messages\S_DUNGEON_EVENT_MESSAGE.cs" />
@@ -310,6 +317,8 @@
     <Compile Include="Parsing\Messages\S_OTHER_USER_APPLY_PARTY.cs" />
     <Compile Include="Parsing\Messages\S_PARTY_MATCH_LINK.cs" />
     <Compile Include="Parsing\Messages\S_PARTY_MEMBER_INTERVAL_POS_UPDATE.cs" />
+    <Compile Include="Parsing\Messages\S_REQUEST_CITY_WAR_MAP_INFO.cs" />
+    <Compile Include="Parsing\Messages\S_REQUEST_CITY_WAR_MAP_INFO_DETAIL.cs" />
     <Compile Include="Parsing\Messages\S_RESPONSE_GAMESTAT_PONG.cs" />
     <Compile Include="Parsing\Messages\S_SHOW_CANDIDATE_LIST.cs" />
     <Compile Include="Parsing\Messages\S_SHOW_PARTY_MATCH_INFO.cs" />
@@ -317,9 +326,14 @@
     <Compile Include="Parsing\Messages\S_UPDATE_FRIEND_INFO.cs" />
     <Compile Include="Parsing\Messages\S_USER_BLOCK_LIST.cs" />
     <Compile Include="Parsing\OpcodeDownloader.cs" />
+    <Compile Include="Parsing\SkillId.cs" />
     <Compile Include="Parsing\SystemMessagesProcessor.cs" />
+    <Compile Include="Parsing\Messages\S_SHOW_HP.cs" />
     <Compile Include="Properties\Annotations.cs" />
     <Compile Include="Properties\Annotations1.cs" />
+    <Compile Include="ProxyPacketSplitter.cs" />
+    <Compile Include="SettingsReader.cs" />
+    <Compile Include="SettingsWriter.cs" />
     <Compile Include="TemplateSelectors\EnemyTemplateSelector.cs" />
     <Compile Include="TemplateSelectors\EnemyWindowTemplateSelector.cs" />
     <Compile Include="TemplateSelectors\MessageBodyDataTemplateSelector.cs" />
@@ -332,9 +346,6 @@
     </Compile>
     <Compile Include="Controls\ClassBars\ArcherBar.xaml.cs">
       <DependentUpon>ArcherBar.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Controls\ArcherFocusControl.xaml.cs">
-      <DependentUpon>ArcherFocusControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="Controls\BarCooldown.xaml.cs">
       <DependentUpon>BarCooldown.xaml</DependentUpon>
@@ -444,7 +455,7 @@
     <Compile Include="Parsing\Messages\S_WEAK_POINT.cs" />
     <Compile Include="Parsing\Messages\S_WHISPER.cs" />
     <Compile Include="Proxy.cs" />
-    <Compile Include="SettingsManager.cs" />
+    <Compile Include="Settings.cs" />
     <Compile Include="SkillUtils.cs" />
     <Compile Include="Sniffing\ConnectionId.cs" />
     <Compile Include="Sniffing\EndpointIpv4.cs" />
@@ -483,8 +494,8 @@
     <Compile Include="Controls\BossGage.xaml.cs">
       <DependentUpon>BossGage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="ClassSpecific\Mystic.cs" />
-    <Compile Include="ClassSpecific\Warrior.cs" />
+    <Compile Include="ClassSpecific\MysticAbnormalityTracker.cs" />
+    <Compile Include="ClassSpecific\WarriorAbnormalityTracker.cs" />
     <Compile Include="Data\Databases\MonsterDatabase.cs" />
     <Compile Include="Parsing\Messages\S_BOSS_GAGE_INFO.cs" />
     <Compile Include="Parsing\Messages\S_PLAYER_CHANGE_FLIGHT_ENERGY.cs" />
@@ -641,6 +652,7 @@
     <Compile Include="ViewModels\ClassManagers\BerserkerBarManager.cs" />
     <Compile Include="ViewModels\ClassManagers\BrawlerBarManager.cs" />
     <Compile Include="ViewModels\ChatWindowViewModel.cs" />
+    <Compile Include="ViewModels\ClassManagers\DurationCooldownIndicator.cs" />
     <Compile Include="ViewModels\ClassManagers\GunnerBarManager.cs" />
     <Compile Include="ViewModels\ClassManagers\LancerBarManager.cs" />
     <Compile Include="ViewModels\ClassManagers\ClassManager.cs" />
@@ -714,6 +726,9 @@
       <DependentUpon>ChatWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Converters\ClassToFillConverter.cs" />
+    <Compile Include="Windows\CivilUnrestWindow.xaml.cs">
+      <DependentUpon>CivilUnrestWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Windows\ClassWindow.xaml.cs">
       <DependentUpon>ClassWindow.xaml</DependentUpon>
     </Compile>
@@ -875,10 +890,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Controls\ClassBars\ArcherBar.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Controls\ArcherFocusControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -1079,6 +1090,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Windows\ChatWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Windows\CivilUnrestWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -1713,6 +1728,7 @@
     <Resource Include="resources\images\combat.png" />
     <None Include="resources\data\monsters\monsters-EU-EN.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <SubType>Designer</SubType>
     </None>
     <None Include="resources\data\monsters\monsters-EU-FR.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

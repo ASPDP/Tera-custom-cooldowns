@@ -18,14 +18,14 @@ namespace TCC.Controls.ClassBars
             {
                 _dc = DataContext as WarriorBarManager;
                 if (_dc != null) _dc.EdgeCounter.PropertyChanged += OnEdgePropertyChanged;
-                else Console.WriteLine("[EdgeBarLayout] DataContext is null!");
+                //else Console.WriteLine("[EdgeBarLayout] DataContext is null!");
             };
         }
 
         private void OnEdgePropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             if (e.PropertyName != nameof(Counter.Val)) return;
-            for (var i = 0; i < 10; i++)
+            for (var i = 0; i < _dc.EdgeCounter.MaxValue; i++)
             {
                 if (i < _dc.EdgeCounter.Val)
                 {

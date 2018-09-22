@@ -33,12 +33,12 @@ namespace TCC.Data
 
         public int Size
         {
-            get => _customSize ? _size : SettingsManager.FontSize;
+            get => _customSize ? _size : Settings.FontSize;
             set
             {
                 if (_size == value) return;
                 _size = value;
-                _customSize = value != SettingsManager.FontSize;
+                _customSize = value != Settings.FontSize;
                 NPC(nameof(Size));
             }
         }
@@ -99,7 +99,7 @@ namespace TCC.Data
         public MessagePiece(string text)
         {
             _dispatcher = ChatWindowManager.Instance.GetDispatcher();
-            WindowManager.Settings.Dispatcher.Invoke(() => ((SettingsWindowViewModel)WindowManager.Settings.DataContext).PropertyChanged += MessagePiece_PropertyChanged);
+            WindowManager.SettingsWindow.Dispatcher.Invoke(() => ((SettingsWindowViewModel)WindowManager.SettingsWindow.DataContext).PropertyChanged += MessagePiece_PropertyChanged);
 
             Text = text;
             Spaces = SetThickness(text);

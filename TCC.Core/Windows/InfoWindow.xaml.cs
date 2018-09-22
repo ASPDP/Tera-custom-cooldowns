@@ -12,6 +12,8 @@ namespace TCC.Windows
     /// </summary>
     public partial class InfoWindow
     {
+        public IntPtr Handle => Dispatcher.Invoke(() => new WindowInteropHelper(this).Handle);
+
         public InfoWindow()
         {
             InitializeComponent();
@@ -43,6 +45,7 @@ namespace TCC.Windows
         {
             var handle = new WindowInteropHelper(this).Handle;
             FocusManager.HideFromToolBar(handle);
+            FocusManager.MakeUnfocusable(handle);
         }
         internal void ShowWindow()
         {
@@ -51,7 +54,7 @@ namespace TCC.Windows
                 Topmost = false; Topmost = true;
                 Opacity = 0;
                 Show();
-                Activate();
+                //Activate();
                 BeginAnimation(OpacityProperty, new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(200)));
             });
         }

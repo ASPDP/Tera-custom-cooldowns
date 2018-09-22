@@ -10,7 +10,7 @@ namespace TCC
     {
         public const int MaxWeekly = 16;
         public const int MaxDaily = 16;
-        public const uint MaxGuardianPoints = 100000;
+        public const int MaxGuardianQuests = 40;
         private static bool _logged = false;
         private static bool _loadingScreen = true;
 
@@ -106,6 +106,7 @@ namespace TCC
         {
             if (target == CurrentPlayer.EntityId)
             {
+                var old = CurrentPlayer.IsInCombat;
                 if (combat)
                 {
                     CurrentPlayer.IsInCombat = true;
@@ -116,7 +117,7 @@ namespace TCC
                     CurrentPlayer.IsInCombat = false;
                     CharacterWindowViewModel.Instance.Player.IsInCombat = false;
                 }
-                App.BaseDispatcher.Invoke(() => CombatChanged?.Invoke());
+                if(combat != old) App.BaseDispatcher.Invoke(() => CombatChanged?.Invoke());
             }
         }
         public static void SetPlayerHp(float hp)
@@ -139,7 +140,7 @@ namespace TCC
             if (target != CurrentPlayer.EntityId) return;
             CurrentPlayer.CurrentST = st;
             CharacterWindowViewModel.Instance.Player.CurrentST = st;
-            if (SettingsManager.ClassWindowSettings.Enabled) ClassWindowViewModel.Instance.CurrentManager.SetST(Convert.ToInt32(st));
+            if (Settings.ClassWindowSettings.Enabled) ClassWindowViewModel.Instance.CurrentManager.SetST(Convert.ToInt32(st));
         }
         public static void SetPlayerFe(float en)
         {
@@ -178,7 +179,7 @@ namespace TCC
             if (target != CurrentPlayer.EntityId) return;
             CurrentPlayer.MaxST = maxSt;
             CharacterWindowViewModel.Instance.Player.MaxST = maxSt;
-            if (SettingsManager.ClassWindowSettings.Enabled) ClassWindowViewModel.Instance.CurrentManager.SetMaxST(Convert.ToInt32(maxSt));
+            if (Settings.ClassWindowSettings.Enabled) ClassWindowViewModel.Instance.CurrentManager.SetMaxST(Convert.ToInt32(maxSt));
         }
 
         public static void SetPlayerShield(uint damage)
@@ -210,6 +211,12 @@ namespace TCC
             AchievementGradeDatabase = new AchievementGradeDatabase(lang);
             MapDatabase = new MapDatabase(lang);
             QuestDatabase = new QuestDatabase(lang);
+        }
+
+        public static void SetPlayerCritFactor(float p)
+        {
+            CharacterWindowViewModel.Instance.Player.CritFactor = p;
+
         }
     }
 

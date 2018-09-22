@@ -1,5 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -7,10 +7,10 @@ using System.Net;
 using System.Reflection;
 using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Interop;
+using System.Windows.Media;
 using System.Windows.Threading;
-using Newtonsoft.Json.Linq;
 using TCC.Data;
 using TCC.Parsing;
 using TCC.Sniffing;
@@ -35,20 +35,20 @@ namespace TCC
 
         private void OnStartup(object sender, StartupEventArgs e)
         {
-//#if DEBUG
-//            DebugWindow = new DebugWindow();
-//            DebugWindow.Show();
-//#endif
+            //#if DEBUG
+            //            DebugWindow = new DebugWindow();
+            //            DebugWindow.Show();
+            //#endif
+
             var v = Assembly.GetExecutingAssembly().GetName().Version;
             _version = $"TCC v{v.Major}.{v.Minor}.{v.Build}";
-            //new Task(() => { if (new Firebase.Firebase().CheckService()) Console.WriteLine("Firebase ok");}).Start(); 
             InitSplashScreen();
 
             BaseDispatcher = Dispatcher.CurrentDispatcher;
             TccMessageBox.Create(); //Create it here in STA thread
-
+#if DEBUG
             AppDomain.CurrentDomain.UnhandledException += GlobalUnhandledExceptionHandler;
-            Process.GetCurrentProcess().PriorityClass = ProcessPriorityClass.Normal;
+#endif
             TryDeleteUpdater();
 
             SplashScreen.SetText("Checking for application updates...");
@@ -58,16 +58,19 @@ namespace TCC
             UpdateManager.CheckDatabaseVersion();
 
             SplashScreen.SetText("Loading settings...");
-            SettingsManager.LoadWindowSettings();
-            SettingsManager.LoadSettings();
+            var sr = new SettingsReader();
+            sr.LoadWindowSettings();
+            sr.LoadSettings();
 
+            Process.GetCurrentProcess().PriorityClass = Settings.HighPriority ? ProcessPriorityClass.High : ProcessPriorityClass.Normal;
+            if (Settings.ForceSoftwareRendering) RenderOptions.ProcessRenderMode = RenderMode.SoftwareOnly;
             SplashScreen.SetText("Pre-loading databases...");
-            SessionManager.InitDatabases(string.IsNullOrEmpty(SettingsManager.LastRegion) ? "EU-EN" : SettingsManager.LastRegion == "EU" ? "EU-EN" : SettingsManager.LastRegion);
+            SessionManager.InitDatabases(string.IsNullOrEmpty(Settings.LastRegion) ? "EU-EN" : Settings.LastRegion == "EU" ? "EU-EN" : Settings.LastRegion);
 
             SplashScreen.SetText("Initializing windows...");
             WindowManager.Init();
 
-            SplashScreen.SetText("Initializing Twitch connector...");
+            //SplashScreen.SetText("Initializing Twitch connector...");
             //TwitchConnector.Instance.Init();
 
             SplashScreen.SetText("Initializing packet processor...");
@@ -75,18 +78,29 @@ namespace TCC
             TeraSniffer.Instance.NewConnection += TeraSniffer_OnNewConnection;
             TeraSniffer.Instance.EndConnection += TeraSniffer_OnEndConnection;
             TeraSniffer.Instance.Enabled = true;
-
+            WindowManager.FloatingButton.NotifyExtended("TCC", "Ready to connect.", NotificationType.Normal);
             SplashScreen.SetText("Starting");
             SessionManager.CurrentPlayer.Class = Class.None;
             SessionManager.CurrentPlayer.Name = "player";
             SessionManager.CurrentPlayer.EntityId = 10;
-            TimeManager.Instance.SetServerTimeZone(SettingsManager.LastRegion);
+            TimeManager.Instance.SetServerTimeZone(Settings.LastRegion);
             ChatWindowManager.Instance.AddTccMessage(_version);
             SplashScreen.CloseWindowSafe();
 
             UpdateManager.StartCheck();
-            //ClassWindowViewModel.Instance.CurrentClass = Class.Gunner;
+            //var r = new Random();
+            //for (int i = 0; i < 30; i++)
+            //{
+            //    WindowManager.CivilUnrestWindow.VM.AddGuild(new CityWarGuildInfo(1, (uint)i, 0, 0, (float)r.Next(0, 100) / 100));
+            //    WindowManager.CivilUnrestWindow.VM.SetGuildName((uint)i, "Guild " + i);
+            //    WindowManager.CivilUnrestWindow.VM.AddDestroyedGuildTower((uint)r.Next(0, 29));
 
+            //}
+
+            //ClassWindowViewModel.Instance.CurrentClass = Class.Priest;
+            //EntitiesManager.SpawnNPC(920, 3000, 10, Visibility.Visible);
+            //Task.Delay(2000).ContinueWith(t => BossGageWindowViewModel.Instance.AddOrUpdateBoss(10,5250000000,3240000000,true, HpChangeSource.BossGage));
+            //Task.Delay(4000).ContinueWith(t => BossGageWindowViewModel.Instance.AddOrUpdateBoss(10,5250000000,2240000000,true, HpChangeSource.BossGage));
             //EntitiesManager.SpawnNPC(950,3000,10,Visibility.Visible);
             //EntitiesManager.SpawnNPC(970,1000,11,Visibility.Visible);
             //EntitiesManager.SpawnNPC(970,2000,12,Visibility.Visible);
@@ -253,7 +267,7 @@ namespace TCC
 
         public static void Restart()
         {
-            SettingsManager.SaveSettings();
+            SettingsWriter.Save();
             Process.Start("TCC.exe");
             CloseApp();
         }
@@ -285,15 +299,15 @@ namespace TCC
                 c.UploadStringAsync(new Uri("https://us-central1-tcc-report.cloudfunctions.net/stat"),
                     Encoding.UTF8.GetString(Encoding.UTF8.GetBytes(js.ToString())));
 
-                SettingsManager.StatSent = true;
-                SettingsManager.SaveSettings();
+                Settings.StatSent = true;
+                SettingsWriter.Save();
             }
         }
 
         public static void CloseApp()
         {
             TeraSniffer.Instance.Enabled = false;
-            SettingsManager.SaveSettings();
+            SettingsWriter.Save();
             WindowManager.Dispose();
             Proxy.CloseConnection();
             UpdateManager.StopTimer();

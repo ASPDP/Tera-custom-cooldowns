@@ -1,16 +1,15 @@
 ﻿<Application xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:dragablz="http://dragablz.net/winfx/xaml/dragablz"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:themes="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero"
+             xmlns:system="clr-namespace:System;assembly=mscorlib"
              xmlns:local="clr-namespace:TCC"
              xmlns:controls="clr-namespace:TCC.Controls"
-             xmlns:converters="clr-namespace:TCC.Converters"
              xmlns:chatcontrols="clr-namespace:TCC.Controls.ChatControls"
+             xmlns:converters="clr-namespace:TCC.Converters"
+             xmlns:data="clr-namespace:TCC.Data"
              xmlns:templateselectors="clr-namespace:TCC.TemplateSelectors"
              xmlns:vm="clr-namespace:TCC.ViewModels"
-             xmlns:system="clr-namespace:System;assembly=mscorlib"
-             xmlns:themes="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero"
-             xmlns:data="clr-namespace:TCC.Data"
-             xmlns:dragablz="http://dragablz.net/winfx/xaml/dragablz"
-             xmlns:databases="clr-namespace:TCC.Data.Databases"
              x:Class="TCC.App"
              Startup="OnStartup">
     <Application.Resources>
@@ -29,6 +28,9 @@
             <Color x:Key="MpColor2Base">#0ab8f6</Color>
             <Color x:Key="HpDebuffColorBase">#9c04bd</Color>
             <Color x:Key="HpDebuffColor2Base">#b24cc8</Color>
+            <Color x:Key="RunemarkColorMaxBase">#ff98bb</Color>
+            <Color x:Key="NinjaColorBase">#c387ff</Color>
+            <Color x:Key="TankRoleColorBase">#32b3e2</Color>
 
             <SolidColorBrush x:Key="MainColor" Color="#ff3822"/>
             <SolidColorBrush x:Key="GreenColor" Color="{StaticResource GreenColorBase}"/>
@@ -40,7 +42,7 @@
             <SolidColorBrush x:Key="DailyColor" Color="#42b0f4"/>
             <SolidColorBrush x:Key="MarksColor" Color="#aad"/>
             <SolidColorBrush x:Key="GuardianColor" Color="#e5442b"/>
-            <SolidColorBrush x:Key="NinjaColor" Color="#c387ff"/>
+            <SolidColorBrush x:Key="NinjaColor" Color="{StaticResource NinjaColorBase}"/>
 
             <SolidColorBrush x:Key="DefaultBackgroundColor" Color="#222228" Opacity=".9"/>
             <SolidColorBrush x:Key="FadedBorderColor" Color="#aa303035" Opacity="1"/>
@@ -63,7 +65,7 @@
 
             <SolidColorBrush x:Key="HealerRoleColor" Color="#3bdb83" />
             <SolidColorBrush x:Key="DpsRoleColor" Color="#ff894a" />
-            <SolidColorBrush x:Key="TankRoleColor" Color="#32b3e2" />
+            <SolidColorBrush x:Key="TankRoleColor" Color="{StaticResource TankRoleColorBase}" />
 
             <SolidColorBrush x:Key="IgnidraxColor" Color="#ff894a"/>
             <SolidColorBrush x:Key="TerradraxColor" Color="#ffcb76"/>
@@ -82,6 +84,9 @@
             <SolidColorBrush x:Key="MoongourdAccentColor" Color="#26b99a"/>
             <SolidColorBrush x:Key="MoongourdFadedAccentColor" Color="#1b9190"/>
 
+            <SolidColorBrush x:Key="RunemarkColor" Color="#ffe3bd"/>
+            <SolidColorBrush x:Key="RunemarkColorMax" Color="{StaticResource RunemarkColorMaxBase}"/>
+
 
 
             <Color x:Key="KrBgColorBase" >#2c313b</Color>
@@ -90,7 +95,9 @@
             <Color x:Key="KrBorderColorBase" >#515b65</Color>
             <SolidColorBrush x:Key="KrBgColor" Color="{StaticResource KrBgColorBase}"/>
             <SolidColorBrush x:Key="KrBgColorDark" Color="{StaticResource KrBgColorDarkBase}"/>
+            <SolidColorBrush x:Key="KrBgColorDarkT70" Color="{StaticResource KrBgColorDarkBase}" Opacity=".7"/>
             <SolidColorBrush x:Key="KrBgColorDarker" Color="{StaticResource KrBgColorDarkerBase}"/>
+            <SolidColorBrush x:Key="KrBgColorDarkerT70" Color="{StaticResource KrBgColorDarkerBase}" Opacity=".7"/>
             <SolidColorBrush x:Key="KrBorderColor" Color="{StaticResource KrBorderColorBase}"/>
 
             <LinearGradientBrush x:Key="KrBg" EndPoint="1 1" StartPoint="0 0" >
@@ -152,6 +159,7 @@
             <SolidColorBrush x:Key="Colors.Chat.System.WorldBoss" Color="#fffcb7ff"/>
 
             <RotateTransform x:Key="Rotate45" Angle="45"/>
+            <RotateTransform x:Key="Rotate45Inv" Angle="-45"/>
             <SkewTransform x:Key="Skew45" AngleX="-45"/>
             <SkewTransform x:Key="Skew45Inv" AngleX="45"/>
             <QuadraticEase x:Key="QuadraticEase"/>
@@ -1164,13 +1172,23 @@
             <!--Channel label templates-->
             <DataTemplate x:Key="WhisperChannelLabelTemplate" DataType="data:ChatMessage">
                 <Grid Height="12" Width="12" VerticalAlignment="Top" UseLayoutRounding="True">
-                    <Path Data="M12 8V4l8 8-8 8v-4H4V8z" Fill="{Binding Channel, Converter={StaticResource Converters.ChatChannelToColor}}" Opacity=".7" 
+                    <Path Data="M12 8V4l8 8-8 8v-4H4V8z" Opacity=".7" 
                       Stretch="Uniform" VerticalAlignment="Center">
                         <Path.LayoutTransform>
                             <TransformGroup>
                                 <ScaleTransform CenterX="1" ScaleX="{Binding Channel, Converter={StaticResource Converters.WhisperDirectionToAngle}}"/>
                             </TransformGroup>
                         </Path.LayoutTransform>
+                        <Path.Style>
+                            <Style TargetType="Path">
+                                        <Setter Property="Fill" Value="{StaticResource Colors.Chat.Whisper}"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Channel}" Value="ReceivedWhisper">
+                                        <Setter Property="Fill" Value="Orange"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Path.Style>
                     </Path>
                 </Grid>
             </DataTemplate>

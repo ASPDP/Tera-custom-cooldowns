@@ -1,6 +1,4 @@
-﻿using System.Windows;
-using TCC.Data;
-using TCC.ViewModels;
+﻿using TCC.ViewModels;
 
 namespace TCC.Windows
 {
@@ -14,20 +12,25 @@ namespace TCC.Windows
             InitializeComponent();
             ButtonsRef = Buttons;
             MainContent = content;
-            Init(SettingsManager.ClassWindowSettings, ignoreSize: true);
-            SettingsManager.ClassWindowSettings.EnabledChanged += OnEnabledChanged;
+            Init(Settings.ClassWindowSettings, ignoreSize: true, undimOnFlyingGuardian:false);
+            Settings.ClassWindowSettings.EnabledChanged += OnEnabledChanged;
 
             if (!SessionManager.Logged) return;
             if (ClassWindowViewModel.Instance.CurrentManager == null)
                 ClassWindowViewModel.Instance.CurrentClass = SessionManager.CurrentPlayer.Class;
 
+
         }
+
+
 
         private new void OnEnabledChanged() 
         {
-            if (SettingsManager.ClassWindowSettings.Enabled)
+            if (Settings.ClassWindowSettings.Enabled)
                 ClassWindowViewModel.Instance.CurrentClass = SessionManager.CurrentPlayer.Class;
             base.OnEnabledChanged();
         }
+
+        
     }
 }

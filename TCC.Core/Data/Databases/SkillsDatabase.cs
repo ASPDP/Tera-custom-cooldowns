@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Xml.Linq;
 
 namespace TCC.Data.Databases
 {
@@ -63,10 +62,12 @@ namespace TCC.Data.Databases
                 //Enum.TryParse(cString, out c);
                 var name = s[4];
                 //var tooltip = s[3];
+                var detail = s[6];
                 var iconName = s[7];
 
                 var sk = new Skill(id, c, name, "");
                 sk.IconName = iconName;
+                sk.Detail = detail.ToLowerInvariant();
                 if (Skills[c].ContainsKey(id)) continue;
                 Skills[c].Add(id, sk);
 

@@ -1,6 +1,9 @@
 ﻿using System;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Media.Animation;
+using TCC.Annotations;
 using TCC.Converters;
 using TCC.Data;
 using Arc = TCC.Controls.Arc;
@@ -10,12 +13,18 @@ namespace TCC.Windows
     /// <summary>
     /// Logica di interazione per FlightDurationWindow.xaml
     /// </summary>
-    public partial class FlightDurationWindow
+    public partial class FlightDurationWindow : INotifyPropertyChanged
     {
         private readonly DoubleAnimation _arcAn;
         private readonly DoubleAnimation _winShow;
         private readonly DoubleAnimation _winHide;
         private bool _firstLoad = true;
+
+        public FlightStackType Type => FlyingGuardianDataProvider.StackType;
+        public double FlightGaugeRotation => Settings.FlightGaugeRotation;
+        public bool FlipFlightGauge => Settings.FlipFlightGauge;
+
+
         public FlightDurationWindow()
         {
             InitializeComponent();
@@ -23,13 +32,19 @@ namespace TCC.Windows
             ButtonsRef = null;
             MainContent = Content as UIElement;
 
-            Init(SettingsManager.FlightGaugeWindowSettings);
+            //Settings.FlightGaugeWindowSettings.ShowAlways = true;
+            //Settings.FloatingButtonSettings.AutoDim = false;
 
+            FlyingGuardianDataProvider.StackTypeChanged += (t) => NPC(nameof(Type));
+            FlyingGuardianDataProvider.StacksChanged += SetStacks;
+            FlyingGuardianDataProvider.IsInProgressChanged += OnFlyingGuardianInProgressChanged;
+            SessionManager.CombatChanged += OnCombatChanged;
+
+            Init(Settings.FlightGaugeWindowSettings, perClassPosition: false);
             Opacity = 0;
 
-            _winHide = new DoubleAnimation(0, TimeSpan.FromMilliseconds(250));
-            //_winHide.Completed += (s, ev) => Hide();
-            _winShow = new DoubleAnimation(1, TimeSpan.FromMilliseconds(250));
+            _winHide = new DoubleAnimation(0, TimeSpan.FromMilliseconds(100));
+            _winShow = new DoubleAnimation(1, TimeSpan.FromMilliseconds(100));
             _arcAn = new DoubleAnimation()
             {
                 Duration = TimeSpan.FromMilliseconds(250),
@@ -37,7 +52,9 @@ namespace TCC.Windows
             };
             _arcAn.Completed += (s, ev) =>
             {
-                if (Arc.EndAngle >= 87 && _arcAn.From < _arcAn.To) HideWindow();
+                if (Arc.EndAngle >= 87 && 
+                _arcAn.From < _arcAn.To && 
+                !FlyingGuardianDataProvider.IsInProgress) HideWindow();
                 else
                 {
                     if (Opacity == 0) ShowWindow();
@@ -45,19 +62,43 @@ namespace TCC.Windows
             };
         }
 
+        private void OnCombatChanged()
+        {
+            if(SessionManager.Combat) HideWindow();
+        }
+
+        private void OnFlyingGuardianInProgressChanged(bool obj)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                StacksContainer.Visibility = obj ? Visibility.Visible : Visibility.Collapsed;
+            });
+        }
+
         public void SetEnergy(double val)
         {
-            if (!SettingsManager.ShowFlightEnergy) return;
+            if (!Settings.ShowFlightEnergy) return;
             Dispatcher.Invoke(() =>
             {
                 if (Opacity == 0) ShowWindow();
                 var c = new FactorToAngleConverter();
                 _arcAn.From = Arc.EndAngle;
-                _arcAn.To = (double)c.Convert(val/1000, null, 4, null);
+                _arcAn.To = (double)c.Convert(val / 1000, null, 4, null);
                 Arc.BeginAnimation(Arc.EndAngleProperty, _arcAn);
             });
         }
 
+
+        public void SetStacks(int stacks)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                for (int i = 9; i >= 0; i--)
+                {
+                    (StacksContainer.Children[i] as FrameworkElement).Opacity = i + 1 <= stacks ? 1 : 0.2;
+                }
+            });
+        }
 
         private void HideWindow()
         {
@@ -66,10 +107,21 @@ namespace TCC.Windows
 
         private void ShowWindow()
         {
-            //FocusManager.MakeClickThru(Handle);
             Opacity = 0;
-            //Show();
             BeginAnimation(OpacityProperty, _winShow);
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        [NotifyPropertyChangedInvocator]
+        protected virtual void NPC([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        public void ExNPC(string prop)
+        {
+            NPC(prop);
         }
     }
 }

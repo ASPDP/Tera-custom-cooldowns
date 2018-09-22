@@ -1,42 +1,8 @@
-﻿using System.Windows.Threading;
+﻿using TCC.ClassSpecific;
 using TCC.Data;
-using TCC.Data.Databases;
 
 namespace TCC.ViewModels
 {
-    public class DurationCooldownIndicator : TSPropertyChanged
-    {
-        private FixedSkillCooldown _cooldown;
-        private FixedSkillCooldown _buff;
-
-        public FixedSkillCooldown Cooldown
-        {
-            get => _cooldown;
-            set
-            {
-                if(_cooldown == value) return;
-                _cooldown = value;
-                NPC();
-            }
-        }
-        public FixedSkillCooldown Buff
-        {
-            get => _buff;
-            set
-            {
-                if(_buff == value) return;
-                _buff = value;
-                NPC();
-            }
-        }
-
-        public DurationCooldownIndicator(Dispatcher d)
-        {
-            _dispatcher = d;
-            Cooldown = new FixedSkillCooldown();
-            Buff = new FixedSkillCooldown();
-        }
-    }
     internal class LancerBarManager : ClassManager
     {
         public LancerBarManager() : base()
@@ -45,11 +11,12 @@ namespace TCC.ViewModels
             {
                 Max = 10
             };
+            AbnormalityTracker = new LancerAbnormalityTracker();
         }
 
         public DurationCooldownIndicator AdrenalineRush { get; set; }
         public DurationCooldownIndicator GuardianShout { get; set; }
-        public DurationCooldownIndicator Infuriate { get; set; }
+        public FixedSkillCooldown Infuriate { get; set; }
         public StatTracker LH { get; set; }
 
         public override bool StartSpecialSkill(SkillCooldown sk)
@@ -64,9 +31,9 @@ namespace TCC.ViewModels
                 AdrenalineRush.Cooldown.Start(sk.Cooldown);
                 return true;
             }
-            if(sk.Skill.IconName == Infuriate.Cooldown.Skill.IconName)
+            if(sk.Skill.IconName == Infuriate.Skill.IconName)
             {
-                Infuriate.Cooldown.Start(sk.Cooldown);
+                Infuriate.Start(sk.Cooldown);
                 return true;
             }
             return false;
@@ -80,13 +47,12 @@ namespace TCC.ViewModels
 
             GuardianShout = new DurationCooldownIndicator(_dispatcher);
             AdrenalineRush = new DurationCooldownIndicator(_dispatcher);
-            Infuriate = new DurationCooldownIndicator(_dispatcher);
 
             GuardianShout.Cooldown = new FixedSkillCooldown(gshout,  true);
             GuardianShout.Buff = new FixedSkillCooldown(gshout,  false);
             AdrenalineRush.Cooldown = new FixedSkillCooldown(arush,  true);
             AdrenalineRush.Buff = new FixedSkillCooldown(arush,  false);
-            Infuriate.Cooldown = new FixedSkillCooldown(infu,  true);
+            Infuriate = new FixedSkillCooldown(infu,  true);
         }
     }
 }

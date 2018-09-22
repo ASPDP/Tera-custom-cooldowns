@@ -1,7 +1,5 @@
-﻿using System;
-using System.Threading;
+﻿using TCC.ClassSpecific;
 using TCC.Data;
-using TCC.Data.Databases;
 
 namespace TCC.ViewModels
 {
@@ -27,6 +25,7 @@ namespace TCC.ViewModels
 
         public PriestBarManager() : base()
         {
+            AbnormalityTracker = new PriestAbnormalityTracker();
         }
 
 
@@ -61,9 +60,29 @@ namespace TCC.ViewModels
             DivineCharge.Cooldown = new FixedSkillCooldown(dc, true);
 
             // Tripple Nenesis
-            TripleNemesis = new DurationCooldownIndicator(_dispatcher);
             SessionManager.SkillsDatabase.TryGetSkill(290100, Class.Priest, out var tn);
-            TripleNemesis.Cooldown = new FixedSkillCooldown(tn, true);
+            TripleNemesis = new DurationCooldownIndicator(_dispatcher)
+            {
+                Cooldown = new FixedSkillCooldown(tn, false),
+                Buff = new FixedSkillCooldown(tn, false)
+            };
+
+            ClassAbnormalityTracker.MarkingExpired+= OnTripleNemesisExpired;
+            ClassAbnormalityTracker.MarkingRefreshed+= OnTripleNemesisRefreshed;
+        }
+
+        private void OnTripleNemesisRefreshed(ulong duration)
+        {
+            TripleNemesis.Buff.Refresh(duration);
+            TripleNemesis.Cooldown.FlashOnAvailable = false;
+
+        }
+
+        private void OnTripleNemesisExpired()
+        {
+            TripleNemesis.Buff.Refresh(0);
+            TripleNemesis.Cooldown.FlashOnAvailable = true;
+
         }
 
         private void OnGraceBuffEnded(CooldownMode obj) => Grace.Cooldown.FlashOnAvailable = true;

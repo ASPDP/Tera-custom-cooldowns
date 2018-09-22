@@ -1,8 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using System.Windows;
+using TCC.ClassSpecific;
 using TCC.Data;
-using TCC.Data.Databases;
 using TCC.ViewModels;
 
 namespace TCC
@@ -29,14 +29,14 @@ namespace TCC
             if (SessionManager.MonsterDatabase.TryGetMonster(templateId, zoneId, out var m))
             {
                 if (!NearbyNPCs.ContainsKey(entityId)) NearbyNPCs.Add(entityId, m.Name);
-
+                FlyingGuardianDataProvider.InvokeProgressChanged();
                 if (m.IsBoss)
                 {
                     BossGageWindowViewModel.Instance.AddOrUpdateBoss(entityId, m.MaxHP, m.MaxHP, m.IsBoss, HpChangeSource.CreatureChangeHp , templateId, zoneId, v);
                 }
                 else
                 {
-                    if (SettingsManager.ShowOnlyBosses) return;
+                    if (Settings.ShowOnlyBosses) return;
                     BossGageWindowViewModel.Instance.AddOrUpdateBoss(entityId, m.MaxHP, m.MaxHP, m.IsBoss, HpChangeSource.CreatureChangeHp, templateId, zoneId, Visibility.Collapsed);
                 }
             }
@@ -55,6 +55,7 @@ namespace TCC
         private static bool Filter(uint zoneId, uint templateId)
         {
             if (zoneId == 950 && templateId == 1002) return false; //skip HHP4 lament warriors
+            if (zoneId == 210 && templateId == 4000) return false; //skip goddamn toy tanks
 
             return true;
         }
@@ -69,6 +70,8 @@ namespace TCC
                 SessionManager.Encounter = false;
                 GroupWindowViewModel.Instance.SetAggro(0);
             }
+            ClassAbnormalityTracker.CheckMarkingOnDespawn(target);
+            FlyingGuardianDataProvider.InvokeProgressChanged();
         }
         public static void SetNPCStatus(ulong entityId, bool enraged)
         {
@@ -107,6 +110,7 @@ namespace TCC
             BossGageWindowViewModel.Instance.ClearBosses();
             NearbyNPCs.Clear();
             NearbyPlayers.Clear();
+            ClassAbnormalityTracker.ClearMarkedTargets();
         }
         public static void CheckHarrowholdMode(ushort zoneId, uint templateId)
         {
@@ -185,6 +189,12 @@ namespace TCC
         public static bool IsEntitySpawned(ulong pSource)
         {
             return NearbyNPCs.ContainsKey(pSource) || NearbyPlayers.ContainsKey(pSource);
+        }
+
+        public static bool IsEntitySpawned(uint zoneId, uint templateId)
+        {
+            var name = SessionManager.MonsterDatabase.GetName(templateId, zoneId);
+            return name != "Unknown" && NearbyNPCs.ContainsValue(name);
         }
 
         public static string GetEntityName(ulong pSource)
