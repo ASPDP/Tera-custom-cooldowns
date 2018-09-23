@@ -189,6 +189,7 @@ namespace TCC.Controls
                     break;
                 case "MaxHP":
                     _maxHp = ((Npc)sender).MaxHP;
+                    if(Npc.CurrentFactor == 1) NextEnragePercentage = 100 - Npc.EnragePattern.Percentage;
                     break;
                 case "Enraged":
                     var value = ((Npc)sender).Enraged;
@@ -448,6 +449,7 @@ namespace TCC.Controls
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             // ReSharper disable once PossibleNullReferenceException
+            if (value == null) return new SolidColorBrush(Colors.DodgerBlue);
             return (bool)value ? App.Current.FindResource("HpColor") : new SolidColorBrush(Colors.DodgerBlue);
         }
 
