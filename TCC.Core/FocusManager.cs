@@ -15,9 +15,11 @@ namespace TCC
 
     public static class FocusManager
     {
-
+        private static bool _isForeground;
+        private static bool _forceFocused;
 
         // window styles
+        // ReSharper disable InconsistentNaming
         private const uint WS_EX_TRANSPARENT = 0x20;      //clickthru
         private const uint WS_EX_NOACTIVATE = 0x08000000; //don't focus
         private const uint WS_EX_TOOLWINDOW = 0x00000080; //don't show in alt-tab
@@ -26,14 +28,33 @@ namespace TCC
         private const int WM_KEYDOWN = 0x0100;
         private const int WM_KEYUP = 0x0101;
         private const int VK_RETURN = 0x0D;
+        // ReSharper restore InconsistentNaming
 
         // events
         public static event Action ForegroundChanged;
+        public static event Action FocusTick;
 
         // properties
-        public static Timer FocusTimer { get; private set; }
-        public static bool IsForeground { get; private set; }
-        public static bool IsActive
+        private static Timer FocusTimer { get; set; }
+
+        public static bool ForceFocused
+        {
+            get => _forceFocused;
+            set
+            {
+                if(_forceFocused == value) return;
+                _forceFocused = value;
+                ForegroundChanged?.Invoke();
+            }
+        }
+
+        public static bool IsForeground
+        {
+            get => _isForeground || ForceFocused;
+            private set => _isForeground = value;
+        }
+
+        private static bool IsActive
         {
             get
             {
@@ -94,7 +115,9 @@ namespace TCC
             }
         }
 
+/*
         public static int TeraScreenIndex => Screen.AllScreens.ToList().IndexOf(TeraScreen);
+*/
 
         public static Screen TeraScreen
         {
@@ -108,17 +131,20 @@ namespace TCC
             }
         }
         private static IntPtr ForegroundWindow => GetForegroundWindow();
+        public static bool PauseTopmost { get; set; }
 
         public static void MakeUnfocusable(IntPtr hwnd)
         {
             var extendedStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
             SetWindowLong(hwnd, GWL_EXSTYLE, extendedStyle | WS_EX_NOACTIVATE);
         }
+/*
         public static void UndoUnfocusable(IntPtr hwnd)
         {
             var extendedStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
             SetWindowLong(hwnd, GWL_EXSTYLE, extendedStyle & ~WS_EX_NOACTIVATE);
         }
+*/
         public static void HideFromToolBar(IntPtr hwnd)
         {
             var extendedStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
@@ -137,6 +163,7 @@ namespace TCC
 
         private static void CheckForegroundWindow(object sender, ElapsedEventArgs e)
         {
+            FocusTick?.Invoke();
             if (IsForeground == IsActive) return;
             IsForeground = IsActive;
             ForegroundChanged?.Invoke();
@@ -159,25 +186,33 @@ namespace TCC
         [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
         private static extern bool PostMessage(IntPtr hWnd, uint msg, int wParam, int lParam);
 
+/*
         [DllImport("user32.dll", EntryPoint = "FindWindow", SetLastError = true)]
         private static extern IntPtr FindWindowByCaption(IntPtr ZeroOnly, string lpWindowName);
+*/
 
         [DllImport("user32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
-        static extern bool GetWindowRect(IntPtr hWnd, ref RECT lpRect);
+        private static extern bool GetWindowRect(IntPtr hWnd, ref RECT lpRect);
         [StructLayout(LayoutKind.Sequential)]
         private struct RECT
         {
-            public int Left;
-            public int Top;
-            public int Right;
-            public int Bottom;
+            public readonly int Left;
+            public readonly int Top;
+            public readonly int Right;
+            public readonly int Bottom;
         }
 
         public static void Init()
         {
             FocusTimer = new Timer(1000);
             FocusTimer.Elapsed += CheckForegroundWindow;
+            FocusTimer.Start();
+        }
+
+        public static void Dispose()
+        {
+            FocusTimer.Stop();
         }
     }
 }

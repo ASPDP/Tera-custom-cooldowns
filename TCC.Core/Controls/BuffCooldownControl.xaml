@@ -21,7 +21,7 @@
                                            IsHitTestVisible="False"
                                  VerticalAlignment="Center" Padding="25" Margin="-25"
                                  DataContext="{Binding Cooldown}" 
-                                    x:Name="cd"
+                                    x:Name="FixedSkillControl"
                                  >
             <local:FixedSkillControl.LayoutTransform>
                 <ScaleTransform ScaleX=".95" ScaleY=".95"></ScaleTransform>
@@ -30,7 +30,7 @@
 
 
 
-        <Border Style="{StaticResource Styles.DefaultBorder}" 
+        <Border Style="{StaticResource DefaultBorderStyle}" 
                 Opacity="{Binding Buff.Seconds}"
                 BorderThickness="0"
                 Background="#ffbd3d"

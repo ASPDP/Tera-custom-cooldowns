@@ -15,7 +15,7 @@ namespace TCC.Windows
     /// <summary>
     /// Logica di interazione per SkillConfigWindow.xaml
     /// </summary>
-    public partial class SkillConfigWindow : Window
+    public partial class SkillConfigWindow
     {
 
         public IntPtr Handle => Dispatcher.Invoke(() => new WindowInteropHelper(this).Handle);
@@ -49,6 +49,9 @@ namespace TCC.Windows
         private void ClosewWindow(object sender, RoutedEventArgs e)
         {
             var an = new DoubleAnimation(0, TimeSpan.FromMilliseconds(200));
+            FocusManager.ForceFocused = false;
+            WindowManager.ForegroundManager.ForceUndim = false;
+
             an.Completed += (s, ev) =>
             {
                 Hide();
@@ -61,7 +64,8 @@ namespace TCC.Windows
         internal void ShowWindow()
         {
             if (Settings.ForceSoftwareRendering) RenderOptions.ProcessRenderMode = RenderMode.Default;
-
+            FocusManager.ForceFocused = true;
+            WindowManager.ForegroundManager.ForceUndim = true;
             Dispatcher.Invoke(() =>
             {
                 var animation = new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(200));
@@ -81,7 +85,7 @@ namespace TCC.Windows
         private void SkillSearch_OnTextChanged(object sender, TextChangedEventArgs e)
         {
             var view = ((ICollectionView)CooldownWindowViewModel.Instance.SkillsView);
-            view.Filter = o =>  ((Skill)o).ShortName.IndexOf((sender as TextBox).Text, StringComparison.InvariantCultureIgnoreCase) != -1;
+            view.Filter = o =>  ((Skill)o).ShortName.IndexOf(((TextBox) sender).Text, StringComparison.InvariantCultureIgnoreCase) != -1;
             view.Refresh();
         }
 
@@ -100,7 +104,7 @@ namespace TCC.Windows
 
         private void RemoveHiddenSkill(object sender, RoutedEventArgs e)
         {
-            CooldownWindowViewModel.Instance.HiddenSkills.Remove((sender as Button).DataContext as Skill);
+            CooldownWindowViewModel.Instance.HiddenSkills.Remove(((Button) sender).DataContext as Skill);
         }
     }
 }

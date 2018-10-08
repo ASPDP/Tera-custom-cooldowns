@@ -1,11 +1,9 @@
 ﻿using System;
 using System.ComponentModel;
-using System.Globalization;
 using System.Linq;
 using System.Timers;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Threading;
@@ -138,6 +136,15 @@ namespace TCC.Controls
             Timeline.SetDesiredFrameRate(_flash, 30);
             Timeline.SetDesiredFrameRate(_hpAnim, 30);
 
+            SettingsWindowViewModel.AbnormalityShapeChanged += OnAbnormalityShapeChanged;
+
+        }
+
+        private void OnAbnormalityShapeChanged()
+        {
+            Abnormalities.ItemTemplateSelector = null;
+            Abnormalities.ItemTemplateSelector = Application.Current.FindResource("BossAbnormalityTemplateSelector") as DataTemplateSelector;
+
         }
 
         private void TimerPattern_Ended()
@@ -157,9 +164,9 @@ namespace TCC.Controls
                 TimerDot.Visibility = Visibility.Visible;
                 var fr = Npc.TimerPattern is HpTriggeredTimerPattern hptp ? hptp.StartAt : 1;
                 TimerDotPusher.LayoutTransform.BeginAnimation(ScaleTransform.ScaleXProperty,
-                    new DoubleAnimation(fr, 0, TimeSpan.FromMilliseconds(Npc.TimerPattern.Duration*1000)));
+                    new DoubleAnimation(fr, 0, TimeSpan.FromMilliseconds(Npc.TimerPattern.Duration * 1000)));
                 TimerBar.RenderTransform.BeginAnimation(ScaleTransform.ScaleXProperty,
-                    new DoubleAnimation(fr, 0, TimeSpan.FromMilliseconds(Npc.TimerPattern.Duration*1000)));
+                    new DoubleAnimation(fr, 0, TimeSpan.FromMilliseconds(Npc.TimerPattern.Duration * 1000)));
             });
         }
 
@@ -189,7 +196,7 @@ namespace TCC.Controls
                     break;
                 case "MaxHP":
                     _maxHp = ((Npc)sender).MaxHP;
-                    if(Npc.CurrentFactor == 1) NextEnragePercentage = 100 - Npc.EnragePattern.Percentage;
+                    if (Npc.CurrentFactor == 1) NextEnragePercentage = 100 - Npc.EnragePattern.Percentage;
                     break;
                 case "Enraged":
                     var value = ((Npc)sender).Enraged;
@@ -235,6 +242,7 @@ namespace TCC.Controls
             }
         }
 
+/*
         private void AnimateAppear()
         {
             var sc = new ScaleTransform { ScaleY = 0 };
@@ -257,6 +265,7 @@ namespace TCC.Controls
             HpBarGrid.BeginAnimation(OpacityProperty, fade);
             TopInfoGrid.BeginAnimation(OpacityProperty, fade);
         }
+*/
 
         private void AnimateHp()
         {
@@ -304,12 +313,20 @@ namespace TCC.Controls
                 BeginAnimation(OpacityProperty, fade);
 
             };
-            //if (Npc.Visible == Visibility.Visible || true)
-            //{
-            //    AnimateAppear();            
-            //}
+        }
+
+/*
+        private void OnViewModelPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(AbnormalityShape))
+                Abnormalities.ItemTemplate = Application.Current.FindResource(
+                    Settings.AbnormalityShape == AbnormalityShape.Square
+                        ? "SquareBossAbnormality"
+                        : "RoundBossAbnormality") as DataTemplate;
+
 
         }
+*/
 
         private DispatcherTimer _t;
         private void _boss_DeleteEvent()
@@ -319,6 +336,7 @@ namespace TCC.Controls
             _t.Start();
             try
             {
+                SettingsWindowViewModel.AbnormalityShapeChanged -= OnAbnormalityShapeChanged;
                 Dispatcher.Invoke(() => BossGageWindowViewModel.Instance.RemoveMe(Npc));
             }
             catch
@@ -385,7 +403,7 @@ namespace TCC.Controls
         public double Duration => Start - End;
         public EnragePeriodItem(double start)
         {
-            _dispatcher = Dispatcher.CurrentDispatcher;
+            Dispatcher = Dispatcher.CurrentDispatcher;
             Start = start;
 
         }
@@ -399,63 +417,6 @@ namespace TCC.Controls
         {
             NPC(nameof(Factor));
             NPC(nameof(StartFactor));
-        }
-    }
-
-    public class EntityIdToNameConverter : IValueConverter
-    {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            // ReSharper disable once PossibleNullReferenceException
-            return (ulong)value == SessionManager.CurrentPlayer.EntityId
-                ? SessionManager.CurrentPlayer.Name
-                : EntitiesManager.IsEntitySpawned((ulong)value) ? EntitiesManager.GetEntityName((ulong)value) /*(GroupWindowViewModel.Instance.TryGetUser((ulong) value, out var p) ? p.Name*/ : "";
-        }
-
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            throw new NotImplementedException();
-        }
-    }
-
-    public class AggroTypeToFillConverter : IValueConverter
-    {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            // ReSharper disable once PossibleNullReferenceException
-            var x = (AggroCircle)value;
-
-            switch (x)
-            {
-                case AggroCircle.Main:
-                    return new SolidColorBrush(Colors.Orange);
-                case AggroCircle.Secondary:
-                    return new SolidColorBrush(Color.FromRgb(0x70, 0x40, 0xff));
-                case AggroCircle.None:
-                    return new SolidColorBrush(Colors.Transparent);
-                default:
-                    return new SolidColorBrush(Colors.Transparent);
-            }
-        }
-
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            throw new NotImplementedException();
-        }
-    }
-
-    public class BossHPbarColorConverter : IValueConverter
-    {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            // ReSharper disable once PossibleNullReferenceException
-            if (value == null) return new SolidColorBrush(Colors.DodgerBlue);
-            return (bool)value ? App.Current.FindResource("HpColor") : new SolidColorBrush(Colors.DodgerBlue);
-        }
-
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            throw new NotImplementedException();
         }
     }
 }

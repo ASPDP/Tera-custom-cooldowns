@@ -12,7 +12,7 @@ namespace TCC.Data.Databases
         public Dictionary<uint, Dictionary<int, int>> ExpData;
         public ItemsDatabase(string lang = "EU-EN")
         {
-            var f = File.OpenText(AppDomain.CurrentDomain.BaseDirectory + "/resources/data/items/items-" + lang + ".tsv");
+            var f = File.OpenText(Path.GetDirectoryName(typeof(App).Assembly.Location)+ "/resources/data/items/items-" + lang + ".tsv");
             Items = new Dictionary<uint, Item>();
             while (true)
             {
@@ -36,18 +36,19 @@ namespace TCC.Data.Databases
             var euBuggedReju = new Item(149644, "Harrowhold Rejuvenation Potion", 1, 0, 30, "icon_items.potion1_tex");
             if (!Items.ContainsKey(euBuggedReju.Id)) Items.Add(euBuggedReju.Id, euBuggedReju);
 
-            var xpFile = XDocument.Load(AppDomain.CurrentDomain.BaseDirectory + $"/resources/data/equip_exp/equip_exp-{lang}.xml");
+            var xpFile = XDocument.Load(Path.GetDirectoryName(typeof(App).Assembly.Location)+ $"/resources/data/equip_exp/equip_exp-{lang}.xml");
             ExpData = new Dictionary<uint, Dictionary<int, int>>();
             foreach (var xElement in xpFile.Descendants().Where(x => x.Name == "EquipmentExp"))
             {
-                var id = Convert.ToUInt32(xElement.Attribute("id").Value);
+                var id = Convert.ToUInt32(xElement.Attribute("id")?.Value);
                 var d = new Dictionary<int, int>();
                 foreach (var element in xElement.Descendants().Where(x => x.Name == "Exp"))
                 {
-                    var step = Convert.ToInt32(element.Attribute("enchantStep").Value);
-                    var max = Convert.ToInt32(element.Attribute("maxExp").Value);
+                    var step = Convert.ToInt32(element.Attribute("enchantStep")?.Value);
+                    var max = Convert.ToInt32(element.Attribute("maxExp")?.Value);
                     d.Add(step, max);
                 }
+
                 ExpData.Add(id, d);
             }
         }
@@ -70,8 +71,7 @@ namespace TCC.Data.Databases
             {
                 var item = Items[itemId];
                 result = true;
-                sk = new Skill(itemId, Class.Common, item.Name, "");
-                sk.IconName = item.IconName;
+                sk = new Skill(itemId, Class.Common, item.Name, "") {IconName = item.IconName};
             }
             return result;
 
@@ -81,7 +81,7 @@ namespace TCC.Data.Databases
         {
             get
             {
-                var ret = new List<Item>();
+                //var ret = new List<Item>();
                 //foreach (var item in Items.Values)
                 //{
                 //    var iconName = "unknown";
@@ -90,7 +90,7 @@ namespace TCC.Data.Databases
                 //        iconName = item.IconName.ToString();
                 //        iconName = iconName.Replace(".", "/");
                 //    }
-                //    if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + "/resources/images/" + iconName+ ".png")) ret.Add(item);
+                //    if (File.Exists(Path.GetDirectoryName(typeof(App).Assembly.Location)+ "/resources/images/" + iconName+ ".png")) ret.Add(item);
                 //}
 
                 //return ret;

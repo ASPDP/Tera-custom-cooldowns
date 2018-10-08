@@ -49,7 +49,8 @@
         <!--Abnormalities grids-->
         <Grid Name="BuffGrid" Grid.Row="1" Grid.ColumnSpan="2" >
             <ItemsControl Name="Buffs" ItemsSource="{Binding Buffs}" 
-                          Grid.ColumnSpan="2" ItemTemplate="{StaticResource PartyAbnormality}" Margin="0,0,0,0"
+                          ItemTemplateSelector="{StaticResource PartyAbnormalityTemplateSelector}" 
+                          Grid.ColumnSpan="2" Margin="0,0,0,0"
                           ClipToBounds="False">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
@@ -71,7 +72,8 @@
         </Grid>
         <Grid Name="DebuffGrid" Grid.Row="2" Grid.ColumnSpan="2">
             <ItemsControl Name="Debuffs" ItemsSource="{Binding Debuffs}" Grid.ColumnSpan="2"
-                          ItemTemplate="{StaticResource PartyAbnormality}" Margin="0,0,0,0" 
+                          ItemTemplateSelector="{StaticResource PartyAbnormalityTemplateSelector}" 
+                         Margin="0,0,0,0" 
                       ClipToBounds="False">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
@@ -154,7 +156,7 @@
                     RenderTransform="{StaticResource Skew45}" 
                     RenderTransformOrigin=".5 .5" Height="Auto"
                     Background="#5000" BorderThickness="2 1" 
-                    BorderBrush="{StaticResource KrBorderColor}"
+                    BorderBrush="{StaticResource RevampBorderBrush}"
                     Margin="-2 -10 3 7" Padding="1"
                     Visibility="{Binding Online, Converter={StaticResource BooleanToVisibilityConverter}}">
 
@@ -173,8 +175,8 @@
                                 <GradientStop Offset=".2" Color="{Binding IsDebuffed, Converter={StaticResource Converters.DebuffStatusToHpColor}}"></GradientStop>
                                 <GradientStop Offset="1" Color="{Binding IsDebuffed, Converter={StaticResource Converters.DebuffStatusToHpColor2}}"></GradientStop>
 
-                                <!--<GradientStop Color="{StaticResource HpColor2Base}" Offset="0"></GradientStop>
-                            <GradientStop Color="{StaticResource HpColorBase}" Offset=".6"></GradientStop>-->
+                                <!--<GradientStop Color="{StaticResource HpColorLight}" Offset="0"></GradientStop>
+                            <GradientStop Color="{StaticResource HpColor}" Offset=".6"></GradientStop>-->
                             </LinearGradientBrush>
                         </Rectangle.Fill>
 
@@ -191,8 +193,8 @@
                                Style="{StaticResource OnlineBoundVisibility}">
                         <Rectangle.Fill>
                             <LinearGradientBrush EndPoint="1 0">
-                                <GradientStop Color="{StaticResource MpColor2Base}" Offset=".9"></GradientStop>
-                                <GradientStop Color="{StaticResource MpColorBase}" Offset="0"></GradientStop>
+                                <GradientStop Color="{StaticResource MpColorLight}" Offset=".9"></GradientStop>
+                                <GradientStop Color="{StaticResource MpColor}" Offset="0"></GradientStop>
                             </LinearGradientBrush>
 
                         </Rectangle.Fill>
@@ -212,14 +214,14 @@
         <Grid Margin="0" Width="44" Height="44" UseLayoutRounding="False">
             <Border RenderTransform="{StaticResource Rotate45}" 
                     RenderTransformOrigin=".5 .5" 
-                    Background="{StaticResource KrBgColor}" 
+                    Background="{StaticResource RevampBackgroundBrush}" 
                     BorderThickness="2" 
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Stretch"
-                    BorderBrush="{StaticResource KrBorderColor}"
+                    BorderBrush="{StaticResource RevampBorderBrush}"
                     Margin="5"
                     />
-            
+
             <!--Aggro indicator -->
             <Grid x:Name="AggroBorderGrid" RenderTransformOrigin=".5 .5">
                 <Border Name="AggroBorder" 
@@ -337,9 +339,9 @@
                 </Path>
 
                 <Grid.RenderTransform>
-                <TransformGroup>
-                    <TranslateTransform X="0"/>
-                </TransformGroup>
+                    <TransformGroup>
+                        <TranslateTransform X="0"/>
+                    </TransformGroup>
                 </Grid.RenderTransform>
 
             </Grid>
@@ -386,21 +388,21 @@
             </Path>
         </Grid>
         <Grid  Width="14" Height="14" 
-               Opacity="{Binding IsLeader, Converter={StaticResource Converters.BoolToOpacity}}"
+               Visibility="{Binding IsLeader, Converter={StaticResource BooleanToVisibilityConverter}}"
                HorizontalAlignment="Left" VerticalAlignment="Top"
                Grid.Column="0"
                Margin="0"
         >
             <!--<Ellipse Fill="Orange"/>-->
             <Border Background="Orange" 
-                    BorderBrush="{StaticResource KrBorderColor}"
+                    BorderBrush="{StaticResource RevampBorderBrush}"
                     BorderThickness="1"
                     RenderTransformOrigin=".5 .5">
                 <Border.RenderTransform>
                     <RotateTransform Angle="45"/>
                 </Border.RenderTransform>
             </Border>
-            <Rectangle Fill="{StaticResource KrBgColor}" RenderOptions.BitmapScalingMode="Fant" Margin="2">
+            <Rectangle Fill="{StaticResource RevampBackgroundBrush}" RenderOptions.BitmapScalingMode="Fant" Margin="2">
                 <Rectangle.OpacityMask>
                     <ImageBrush  ImageSource="/TCC;component/resources/images/crown.png"></ImageBrush>
                 </Rectangle.OpacityMask>

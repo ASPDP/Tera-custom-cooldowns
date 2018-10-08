@@ -18,8 +18,8 @@ namespace TCC
             }
         }
 
-        private bool _forceVisible = false;
-        private bool _forceUndim = false;
+        private bool _forceVisible = App.Debug;
+        private bool _forceUndim = App.Debug;
         public event Action VisibilityChanged;
         public event Action DimChanged;
         public event Action ClickThruChanged;
@@ -72,7 +72,7 @@ namespace TCC
                             !SessionManager.Encounter &&
                             !ForceUndim;
 
-        public bool Visible => SessionManager.Logged &&
+        public bool Visible => SessionManager .Logged &&
                                !SessionManager.LoadingScreen &&
                                 FocusManager  .IsForeground ||
                                 _forceVisible;

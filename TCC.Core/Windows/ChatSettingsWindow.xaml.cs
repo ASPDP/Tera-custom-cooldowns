@@ -6,10 +6,7 @@ using TCC.ViewModels;
 
 namespace TCC.Windows
 {
-    /// <summary>
-    /// Logica di interazione per ChatSettingsWindow.xaml
-    /// </summary>
-    public partial class ChatSettingsWindow : Window
+    public partial class ChatSettingsWindow
     {
         public ChatSettingsWindow(Tab dataContext)
         {
@@ -20,6 +17,8 @@ namespace TCC.Windows
 
         private void CloseChannelSettings(object sender, RoutedEventArgs e)
         {
+            FocusManager.ForceFocused = false;
+
             var an = new DoubleAnimation(0, TimeSpan.FromMilliseconds(200));
             an.Completed += (s,ev) => Close();
             BeginAnimation(OpacityProperty, an);
@@ -32,6 +31,8 @@ namespace TCC.Windows
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            FocusManager.ForceFocused = true;
+
             BeginAnimation(OpacityProperty, new DoubleAnimation(1, TimeSpan.FromMilliseconds(500)));
         }
     }

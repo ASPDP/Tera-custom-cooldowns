@@ -1,21 +1,16 @@
 ﻿using System;
 using System.Globalization;
+using System.Windows;
 using System.Windows.Data;
 
 namespace TCC.Converters
 {
-    public class DragonSelectedToOpacityConverter : IValueConverter
+    public class SizeToDurationLabelMarginConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if ((bool)value)
-            {
-                return 1;
-            }
-            else
-            {
-                return .5; 
-            }
+            var size = (double?)value ?? 0;
+            return new Thickness(0, 0, 0, -size * 1.25);
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
@@ -23,4 +18,5 @@ namespace TCC.Converters
             throw new NotImplementedException();
         }
     }
+
 }

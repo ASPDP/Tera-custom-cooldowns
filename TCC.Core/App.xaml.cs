@@ -22,19 +22,21 @@ using SplashScreen = TCC.Windows.SplashScreen;
 
 namespace TCC
 {
-    /// <summary>
-    ///     Logica di interazione per App.xaml
-    /// </summary>
     public partial class App
     {
-        private static string _version;
         public const bool Debug = false;
+        private static string _version;
         public static SplashScreen SplashScreen;
         public static Dispatcher BaseDispatcher;
-        public static DebugWindow DebugWindow;
+
+        public const string ThankYou_mEME =
+            "Due to the recent events regarding EME's DMCA takedowns of proxy related repositories, TCC will stop to be supported for NA, meaning that all data required to make it work after patch won't be released for this region. Sorry for this and thanks for all your support.";
+        public static bool Loading { get; set; }
+        //public static DebugWindow DebugWindow;
 
         private void OnStartup(object sender, StartupEventArgs e)
         {
+            Loading = true;
             //#if DEBUG
             //            DebugWindow = new DebugWindow();
             //            DebugWindow.Show();
@@ -46,7 +48,7 @@ namespace TCC
 
             BaseDispatcher = Dispatcher.CurrentDispatcher;
             TccMessageBox.Create(); //Create it here in STA thread
-#if DEBUG
+#if !DEBUG
             AppDomain.CurrentDomain.UnhandledException += GlobalUnhandledExceptionHandler;
 #endif
             TryDeleteUpdater();
@@ -64,6 +66,7 @@ namespace TCC
 
             Process.GetCurrentProcess().PriorityClass = Settings.HighPriority ? ProcessPriorityClass.High : ProcessPriorityClass.Normal;
             if (Settings.ForceSoftwareRendering) RenderOptions.ProcessRenderMode = RenderMode.SoftwareOnly;
+
             SplashScreen.SetText("Pre-loading databases...");
             SessionManager.InitDatabases(string.IsNullOrEmpty(Settings.LastRegion) ? "EU-EN" : Settings.LastRegion == "EU" ? "EU-EN" : Settings.LastRegion);
 
@@ -80,6 +83,7 @@ namespace TCC
             TeraSniffer.Instance.Enabled = true;
             WindowManager.FloatingButton.NotifyExtended("TCC", "Ready to connect.", NotificationType.Normal);
             SplashScreen.SetText("Starting");
+
             SessionManager.CurrentPlayer.Class = Class.None;
             SessionManager.CurrentPlayer.Name = "player";
             SessionManager.CurrentPlayer.EntityId = 10;
@@ -88,6 +92,59 @@ namespace TCC
             SplashScreen.CloseWindowSafe();
 
             UpdateManager.StartCheck();
+
+            if(Settings.LastRegion == "NA" || Settings.LastRegion == "")
+                WindowManager.FloatingButton.NotifyExtended("So long, and thanks for all the fish", ThankYou_mEME, NotificationType.Error, 15000);
+
+            if(Debug) DebugStuff();
+            Loading = false;
+        }
+        
+
+        private static void DebugStuff()
+        {
+            GroupWindowViewModel.Instance.AddOrUpdateMember(new User(BaseDispatcher)
+            {
+                Alive = true,
+                Awakened = true,
+                CurrentHp = 1000,
+                MaxHp = 1000,
+                EntityId = 1,
+                ServerId = 1,
+                PlayerId = 1,
+                UserClass = Class.Archer,
+                Online = true
+            });
+            EntitiesManager.SpawnNPC(920, 3000, 11, Visibility.Visible);
+            EntitiesManager.SpawnNPC(15, 1, 12, Visibility.Visible);
+            EntitiesManager.UpdateNPC(12,1000,1000);
+            AbnormalityManager.BeginOrRefreshPartyMemberAbnormality(1,1, 1495, 200000,1);
+            AbnormalityManager.BeginAbnormality(1495,10,200000,1);
+            AbnormalityManager.BeginAbnormality(1495,11,200000,1);
+            AbnormalityManager.BeginAbnormality(1495,12,200000,1);
+
+            //for (int i = 0; i < 2000; i++)
+            //{
+            //    ChatWindowManager.Instance.AddTccMessage($"Test {i}");
+            //}
+            /*
+                        EntitiesManager.SpawnNPC(210, 1108, 11, Visibility.Visible);
+                        var c = 0;
+                        while (c < 1000)
+                        {
+                            AbnormalityManager.BeginAbnormality(2, 10, 500, 1);
+                            AbnormalityManager.BeginAbnormality(2, 11, 500, 1);
+                            Console.WriteLine("Added " + c);
+                            Thread.Sleep(100);
+                            AbnormalityManager.EndAbnormality(2, 10);
+                            AbnormalityManager.EndAbnormality(2, 11);
+                            Console.WriteLine("Removed " + c);
+                            c++;
+                        }
+            */
+            //AbnormalityManager.BeginAbnormality(1495, 10, 10000, 5);
+            //AbnormalityManager.BeginAbnormality(2066, 10, 100000, 10);
+            //AbnormalityManager.BeginAbnormality(2074, 10, 10000000, 20);
             //var r = new Random();
             //for (int i = 0; i < 30; i++)
             //{
@@ -147,16 +204,17 @@ namespace TCC
             SkillManager.Clear();
             WindowManager.TrayIcon.Icon = WindowManager.ConnectedIcon;
             ChatWindowManager.Instance.AddTccMessage($"Connected to {srv.Name}.");
-            WindowManager.FloatingButton.NotifyExtended($"TCC", $"Connected to {srv.Name}", NotificationType.Success);
+            WindowManager.FloatingButton.NotifyExtended("TCC", $"Connected to {srv.Name}", NotificationType.Success);
         }
 
         private static void TeraSniffer_OnEndConnection()
         {
             ChatWindowManager.Instance.AddTccMessage("Disconnected from the server.");
-            WindowManager.FloatingButton.NotifyExtended($"TCC", "Disconnected", NotificationType.Warning);
+            WindowManager.FloatingButton.NotifyExtended("TCC", "Disconnected", NotificationType.Warning);
 
             GroupWindowViewModel.Instance.ClearAllAbnormalities();
-            BuffBarWindowViewModel.Instance.Player.ClearAbnormalities();
+            SessionManager.CurrentPlayer.ClearAbnormalities();
+            //BuffBarWindowViewModel.Instance.Player.ClearAbnormalities();
             EntitiesManager.ClearNPC();
             SkillManager.Clear();
             WindowManager.TrayIcon.Icon = WindowManager.DefaultIcon;
@@ -166,7 +224,7 @@ namespace TCC
         private static void GlobalUnhandledExceptionHandler(object sender, UnhandledExceptionEventArgs e)
         {
             var ex = (Exception)e.ExceptionObject;
-            File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + "/error.txt",
+            File.WriteAllText(Path.GetDirectoryName(typeof(App).Assembly.Location)+ "/error.txt",
                 "##### CRASH #####\r\n" + ex.Message + "\r\n" +
                 ex.StackTrace + "\r\n" + ex.Source + "\r\n" + ex + "\r\n" + ex.Data + "\r\n" + ex.InnerException +
                 "\r\n" + ex.TargetSite);
@@ -257,7 +315,7 @@ namespace TCC
         {
             try
             {
-                File.Delete(AppDomain.CurrentDomain.BaseDirectory + "/TCCupdater.exe");
+                File.Delete(Path.GetDirectoryName(typeof(App).Assembly.Location)+ "/TCCupdater.exe");
             }
             catch
             {
@@ -315,16 +373,5 @@ namespace TCC
             Environment.Exit(0);
         }
 
-        // ------------------------------ Handlers for controls defined in App.xaml ------------------------------ //
-
-        private void ToolTip_Opened(object sender, RoutedEventArgs e)
-        {
-            FocusManager.FocusTimer.Enabled = false;
-        }
-
-        private void ToolTip_Closed(object sender, RoutedEventArgs e)
-        {
-            FocusManager.FocusTimer.Enabled = true;
-        }
     }
 }

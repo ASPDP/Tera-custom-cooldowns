@@ -29,7 +29,8 @@ namespace TCC.Windows
 
         private static TccMessageBox _messageBox;
         private static MessageBoxResult _result = MessageBoxResult.No;
-        public static MessageBoxResult Show (string caption, string msg, MessageBoxType type)
+
+        private static MessageBoxResult Show (string caption, string msg, MessageBoxType type)
         {
             switch (type)
             {
@@ -68,7 +69,7 @@ namespace TCC.Windows
         {
             if (_messageBox == null) App.BaseDispatcher.Invoke(Create);
 
-            _messageBox.Dispatcher.Invoke(() =>
+            _messageBox?.Dispatcher.Invoke(() =>
             {
                 _messageBox.TxtMsg.Text = text;
                 _messageBox.MessageTitle.Text = caption;
@@ -120,12 +121,12 @@ namespace TCC.Windows
                     //_messageBox.SetImage("Question.png");
                     break;
                 case MessageBoxImage.Information:
-                    _messageBox.Bg.Background = Application.Current.FindResource("MpColor") as SolidColorBrush;
+                    _messageBox.Bg.Background = Application.Current.FindResource("MpBrush") as SolidColorBrush;
                     //_messageBox.SetImage("Information.png");
                     break;
                 case MessageBoxImage.Error:
                     //_messageBox.SetImage("Error.png");
-                    _messageBox.Bg.Background = Application.Current.FindResource("HpColor") as SolidColorBrush;
+                    _messageBox.Bg.Background = Application.Current.FindResource("HpBrush") as SolidColorBrush;
                     break;
             }
         }

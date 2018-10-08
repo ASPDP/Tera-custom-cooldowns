@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Interop;
@@ -13,16 +12,13 @@ using TCC.ViewModels;
 
 namespace TCC.Windows
 {
-    /// <summary>
-    /// Interaction logic for FloatingButtonWindow.xaml
-    /// </summary>
-    public partial class FloatingButtonWindow : TccWidget
+    public partial class FloatingButtonWindow
     {
         public FloatingButtonWindow()
         {
             InitializeComponent();
             TooltipInfo = new TooltipInfo("", "", 1);
-            MainContent = content;
+            MainContent = WindowContent;
             ButtonsRef = null;
             Init(Settings.FloatingButtonSettings, perClassPosition:false);
         }
@@ -30,7 +26,6 @@ namespace TCC.Windows
         private Timer _t;
         private DispatcherTimer _n;
         private DoubleAnimation _an;
-        private int _notificationDuration = 4000;
         private void FloatinButtonLoaded(object sender, RoutedEventArgs e)
         {
             var handle = new WindowInteropHelper(this).Handle;
@@ -41,17 +36,16 @@ namespace TCC.Windows
             if (source?.CompositionTarget == null) return;
             var m = source.CompositionTarget.TransformToDevice;
             var _ = m.M11;
-            var dy = m.M22;
             Left = 0;
             Top = Screen.PrimaryScreen.Bounds.Height/ 2 - ActualHeight / 2;
 
             WindowManager.ForegroundManager.VisibilityChanged += OnTccVisibilityChanged;
             _t = new Timer { Interval = 2000 };
             _t.Tick += RepeatAnimation;
-            _n = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(_notificationDuration) };
+            _n = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(4000) };
             _n.Tick += _n_Tick;
             _an = new DoubleAnimation(.75, 1, TimeSpan.FromMilliseconds(800)) { EasingFunction = new ElasticEase() };
-            _queue = new Queue<Tuple<string, string, NotificationType>>();
+            _queue = new Queue<Tuple<string, string, NotificationType, uint>>();
         }
 
         public TooltipInfo TooltipInfo { get; set; }
@@ -66,14 +60,6 @@ namespace TCC.Windows
         {
             NotificationBubble.RenderTransform.BeginAnimation(ScaleTransform.ScaleXProperty, _an);
             NotificationBubble.RenderTransform.BeginAnimation(ScaleTransform.ScaleYProperty, _an);
-        }
-
-        private void AnimateContentOpacity(double opacity)
-        {
-            //Dispatcher.InvokeIfRequired(() =>
-            //{
-            //    ((FrameworkElement)Content).BeginAnimation(OpacityProperty, new DoubleAnimation(opacity, TimeSpan.FromMilliseconds(250)));
-            //}, System.Windows.Threading.DispatcherPriority.DataBind);
         }
 
         private void OnTccVisibilityChanged()
@@ -117,7 +103,9 @@ namespace TCC.Windows
 
         private void RefreshTopmost()
         {
-            Dispatcher.InvokeIfRequired(() => { Topmost = false; Topmost = true; }, System.Windows.Threading.DispatcherPriority.DataBind);
+            if (FocusManager.PauseTopmost) return;
+
+            Dispatcher.InvokeIfRequired(() => { Topmost = false; Topmost = true; }, DispatcherPriority.DataBind);
         }
 
         public void StartNotifying(int closeEventsCount)
@@ -137,12 +125,12 @@ namespace TCC.Windows
         }
 
         private bool _busy;
-        private Queue<Tuple<string, string, NotificationType>> _queue;
-        public void NotifyExtended(string title, string msg, NotificationType type)
+        private Queue<Tuple<string, string, NotificationType, uint>> _queue;
+        public void NotifyExtended(string title, string msg, NotificationType type, uint timeMs = 4000)
         {
             if (_busy)
             {
-                _queue.Enqueue(new Tuple<string, string, NotificationType>(title, msg, type));
+                _queue.Enqueue(new Tuple<string, string, NotificationType, uint>(title, msg, type,timeMs));
                 return;
             }
 
@@ -154,16 +142,16 @@ namespace TCC.Windows
                 switch (type)
                 {
                     case NotificationType.Normal:
-                        NotificationColorBorder.Background = App.Current.FindResource("Colors.Chat.Party") as SolidColorBrush;
+                        NotificationColorBorder.Background = System.Windows.Application.Current.FindResource("ChatPartyBrush") as SolidColorBrush;
                         break;
                     case NotificationType.Success:
-                        NotificationColorBorder.Background = App.Current.FindResource("GreenColor") as SolidColorBrush;
+                        NotificationColorBorder.Background = System.Windows.Application.Current.FindResource("GreenBrush") as SolidColorBrush;
                         break;
                     case NotificationType.Warning:
-                        NotificationColorBorder.Background = App.Current.FindResource("Tier4DungeonColor") as SolidColorBrush;
+                        NotificationColorBorder.Background = System.Windows.Application.Current.FindResource("Tier4DungeonBrush") as SolidColorBrush;
                         break;
                     case NotificationType.Error:
-                        NotificationColorBorder.Background = App.Current.FindResource("HpColor") as SolidColorBrush;
+                        NotificationColorBorder.Background = System.Windows.Application.Current.FindResource("HpBrush") as SolidColorBrush;
                         break;
                     default:
                         throw new ArgumentOutOfRangeException(nameof(type), type, null);
@@ -178,7 +166,8 @@ namespace TCC.Windows
                     {
                         EasingFunction = new QuadraticEase()
                     });
-                NotificationTimeGovernor.LayoutTransform.BeginAnimation(ScaleTransform.ScaleXProperty, new DoubleAnimation(1, 0, TimeSpan.FromMilliseconds(_notificationDuration)));
+                NotificationTimeGovernor.LayoutTransform.BeginAnimation(ScaleTransform.ScaleXProperty, new DoubleAnimation(1, 0, TimeSpan.FromMilliseconds(timeMs)));
+                _n.Interval = TimeSpan.FromMilliseconds(timeMs);
                 _n.Start();
             });
         }
@@ -202,15 +191,15 @@ namespace TCC.Windows
             _busy = false;
             if (_queue.Count <= 0) return;
             var tuple = _queue.Dequeue();
-            NotifyExtended(tuple.Item1, tuple.Item2, tuple.Item3);
+            NotifyExtended(tuple.Item1, tuple.Item2, tuple.Item3, tuple.Item4);
         }
 
         public void OpenPlayerMenu()
         {
             Dispatcher.Invoke(() =>
             {
-                FocusManager.FocusTimer.Enabled = false;
-                this.RefreshTopmost();
+                FocusManager.PauseTopmost= true;//FocusTimer.Enabled = false;
+                RefreshTopmost();
                 if (PlayerInfo.IsOpen) ClosePlayerMenu();
                 TooltipInfo.Refresh();
                 PlayerInfo.IsOpen = true;
@@ -224,7 +213,7 @@ namespace TCC.Windows
             {
                 if (((PlayerTooltip)PlayerInfo.Child).MgPopup.IsMouseOver) return;
                 if (((PlayerTooltip)PlayerInfo.Child).FpsUtilsPopup.IsMouseOver) return;
-                FocusManager.FocusTimer.Enabled = true;
+                FocusManager.PauseTopmost = false; //.FocusTimer.Enabled = true;
                 PlayerInfo.IsOpen = false;
             });
         }

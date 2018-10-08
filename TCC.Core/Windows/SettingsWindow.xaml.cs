@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.IO;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Interop;
@@ -48,7 +49,7 @@ namespace TCC.Windows
                 if (Settings.ForceSoftwareRendering) RenderOptions.ProcessRenderMode = RenderMode.SoftwareOnly;
             };
             BeginAnimation(OpacityProperty, a);
-            WindowManager.ForegroundManager.RefreshVisible();
+            //WindowManager.ForegroundManager.RefreshVisible();
 
         }
 
@@ -90,13 +91,15 @@ namespace TCC.Windows
 
         private void OpenSettingsFolder(object sender, RoutedEventArgs e)
         {
-            Process.Start(AppDomain.CurrentDomain.BaseDirectory + "/resources/config");
+            Process.Start(Path.GetDirectoryName(typeof(App).Assembly.Location)+ "/resources/config");
         }
 
+/*
         private void ConnectToTwitch(object sender, RoutedEventArgs e)
         {
             //TwitchConnector.Instance.Init();
         }
+*/
 
         private void PaypalLink_MouseDown(object sender, MouseButtonEventArgs e)
         {
@@ -116,11 +119,6 @@ namespace TCC.Windows
         private void WindowPositionsReset(object sender, RoutedEventArgs e)
         {
             WindowManager.ResetToCenter();
-        }
-
-        private void UIElement_OnMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            Process.Start("https://essentialmana.com/dreadspire-4/");
         }
 
         private void ResetCharacterWindowPosition(object sender, RoutedEventArgs e)

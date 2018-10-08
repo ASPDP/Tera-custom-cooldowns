@@ -11,14 +11,14 @@ namespace TCC.Converters
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            switch ((ReadyStatus)value)
+            switch ((ReadyStatus?)value ?? ReadyStatus.None)
             {
                 case ReadyStatus.NotReady:
-                    return Application.Current.FindResource("HpColor");
+                    return Application.Current.FindResource("HpBrush");
                 case ReadyStatus.Ready:
-                    return Application.Current.FindResource("LightGreenColor");
+                    return Application.Current.FindResource("LightGreenBrush");
                 case ReadyStatus.Undefined:
-                    return Application.Current.FindResource("GoldColor");
+                    return Application.Current.FindResource("GoldBrush");
                 default:
                     return Brushes.Transparent;
             }

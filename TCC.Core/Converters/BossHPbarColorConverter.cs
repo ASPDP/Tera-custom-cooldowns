@@ -1,22 +1,18 @@
 ﻿using System;
 using System.Globalization;
+using System.Windows;
 using System.Windows.Data;
 using System.Windows.Media;
 
 namespace TCC.Converters
 {
-    internal class BoolToBrushConverter : IValueConverter
+    public class BossHPbarColorConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if ((bool)value)
-            {
-                return new SolidColorBrush(Color.FromArgb(0x55, 0x0, 0xa5, 0x61));
-            }
-            else
-            {
-                return Brushes.Transparent;
-            }
+            // ReSharper disable once PossibleNullReferenceException
+            if (value == null) return new SolidColorBrush(Colors.DodgerBlue);
+            return (bool)value ? Application.Current.FindResource("HpBrush") : new SolidColorBrush(Colors.DodgerBlue);
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

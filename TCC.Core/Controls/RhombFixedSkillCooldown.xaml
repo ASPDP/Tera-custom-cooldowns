@@ -13,14 +13,6 @@
             <DoubleAnimation Storyboard.TargetProperty="(RenderTransform).(RotateTransform.Angle)"  Duration="0:0:0.1" From="0" To="-5"  EasingFunction="{StaticResource QuadraticEase}"/>
             <DoubleAnimation Storyboard.TargetProperty="(RenderTransform).(RotateTransform.Angle)" BeginTime="0:0:0.1" Duration="0:0:0.9" From="-5" To="0"  EasingFunction="{StaticResource BounceEase}"/>
         </Storyboard>
-        <Storyboard x:Key="WarnExp" RepeatBehavior="Forever">
-            <DoubleAnimation Storyboard.TargetProperty="(RenderTransform).(ScaleTransform.ScaleX)"  Duration="0:0:1"   From="1" To="1.5"  EasingFunction="{StaticResource QuadraticEase}"/>
-            <DoubleAnimation Storyboard.TargetProperty="(RenderTransform).(ScaleTransform.ScaleY)"  Duration="0:0:1"   From="1" To="1.5"  EasingFunction="{StaticResource QuadraticEase}"/>
-            <DoubleAnimation Storyboard.TargetProperty="Opacity"                BeginTime="0:0:0.4" Duration="0:0:0.6" From="1" To="0"    EasingFunction="{StaticResource QuadraticEase}"/>
-        </Storyboard>
-        <Storyboard x:Key="WarnExpStroke" RepeatBehavior="Forever">
-            <DoubleAnimation Storyboard.TargetProperty="StrokeThickness"                            Duration="0:0:1"   From="3" To="0"    EasingFunction="{StaticResource QuadraticEase}" />
-        </Storyboard>
         <Storyboard x:Key="WarnGlow" RepeatBehavior="Forever">
             <DoubleAnimation Storyboard.TargetProperty="(RenderTransform).(RotateTransform.Angle)"  Duration="0:0:0.1" From="0" To="-5"  EasingFunction="{StaticResource QuadraticEase}"/>
             <DoubleAnimation Storyboard.TargetProperty="(RenderTransform).(RotateTransform.Angle)" BeginTime="0:0:0.1" Duration="0:0:0.9" From="-5" To="0"  EasingFunction="{StaticResource BounceEase}"/>
@@ -58,7 +50,7 @@
             </Grid>
 
             <Rectangle Width="61" Height="61" x:Name="Icon" Stroke="#7fff" StrokeThickness="0" RenderTransformOrigin=".5 .5"
-                       OpacityMask="{StaticResource IconOpacityBrush}" HorizontalAlignment="Center" VerticalAlignment="Center">
+                       OpacityMask="{StaticResource RhombOpacityMask}" HorizontalAlignment="Center" VerticalAlignment="Center">
                 <Rectangle.Fill>
                     <ImageBrush ImageSource="{Binding Skill.IconName, Converter={StaticResource Converters.IconNameToPath}}"/>
                 </Rectangle.Fill>
@@ -141,7 +133,7 @@
                    EndAngle=".01" 
                    HorizontalAlignment="Stretch" 
                    VerticalAlignment="Stretch" 
-                   OpacityMask="{StaticResource IconOpacityBrush}">
+                   OpacityMask="{StaticResource RhombOpacityMask}">
         </local:Arc>
         <Rectangle RenderTransformOrigin=".5 .5" RenderTransform="{StaticResource Rotate45}" Stroke="White" StrokeThickness="3"
                    Fill="#9fff" Name="Glow" Opacity="0"
@@ -193,9 +185,9 @@
               VerticalAlignment="Bottom"
               ClipToBounds="False"
               Margin="0 0 0 6"
-              Opacity="{Binding IsRunning, RelativeSource={RelativeSource AncestorType=local:RhombFixedSkillControl}, Converter={StaticResource Converters.BoolToOpacity}}">
-            <Border Background="{StaticResource KrBgColor}" CornerRadius="0" RenderTransformOrigin=".5 .5"
-                    Effect="{StaticResource FadedDropShadow}" BorderBrush="{StaticResource KrBorderColor}"
+              Visibility="{Binding IsRunning, RelativeSource={RelativeSource AncestorType=local:RhombFixedSkillControl}, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <Border Background="{StaticResource RevampBackgroundBrush}" CornerRadius="0" RenderTransformOrigin=".5 .5"
+                    Effect="{StaticResource FadedDropShadow}" BorderBrush="{StaticResource RevampBorderBrush}"
                     BorderThickness="1" Padding="0" RenderTransform="{StaticResource Rotate45}"
                     Height="{Binding RelativeSource={RelativeSource Self}, Path=ActualWidth}"/>
             <TextBlock Foreground="#dfff" 
@@ -212,7 +204,7 @@
         <Rectangle Height="20" VerticalAlignment="Top" MouseEnter="UserControl_MouseEnter" Fill="#01000000"/>
         <Grid HorizontalAlignment="Right" VerticalAlignment="Top" Width="20" Height="20" ToolTip="Remove" Cursor="Hand" Visibility="Collapsed"  Name="DeleteButton"
               MouseLeftButtonDown="DeleteButton_MouseLeftButtonDown">
-            <Ellipse Fill="{StaticResource HpColor}" Effect="{StaticResource DropShadow}"></Ellipse>
+            <Ellipse Fill="{StaticResource HpBrush}" Effect="{StaticResource DropShadow}"></Ellipse>
             <Path Data="{StaticResource SvgClose}" Fill="White" Stretch="Uniform" Margin="5"></Path>
         </Grid>
         <local:Arc StrokeThickness="0" Stroke="White" EndAngle="359.9" x:Name="ResetArc" Opacity="1" Margin="2" RenderTransformOrigin=".5 .5">

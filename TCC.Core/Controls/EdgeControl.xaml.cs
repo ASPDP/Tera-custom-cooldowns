@@ -14,7 +14,7 @@ namespace TCC.Controls
         public EdgeControl()
         {
             InitializeComponent();
-            //baseBorder.Background = (SolidColorBrush)App.Current.FindResource("DefaultBackgroundColor");
+            //baseBorder.Background = (SolidColorBrush)App.Current.FindResource("DefaultBackgroundBrush");
 
         }
         private int _currentEdge;
@@ -28,7 +28,7 @@ namespace TCC.Controls
             {
                 if (newEdge == 10)
                 {
-                    foreach(FrameworkElement child in EdgeContainer.Children){ child.Opacity = 1;}
+                    foreach (FrameworkElement child in EdgeContainer.Children) { child.Opacity = 1; }
                 }
                 for (var i = 0; i < diff; i++)
                 {
@@ -37,7 +37,7 @@ namespace TCC.Controls
             }
             else
             {
-                //baseBorder.Background = (SolidColorBrush)App.Current.FindResource("DefaultBackgroundColor");
+                //baseBorder.Background = (SolidColorBrush)App.Current.FindResource("DefaultBackgroundBrush");
                 MaxBorder.Opacity = 0;
 
                 for (var i = EdgeContainer.Children.Count - 1; i >= 0; i--)
@@ -55,26 +55,24 @@ namespace TCC.Controls
             if (DesignerProperties.GetIsInDesignMode(this)) return;
             //lazy way of making sure that DataContext is not null
             var classMgr = (ClassWindowViewModel.Instance.CurrentManager as WarriorBarManager);
-            _context = classMgr.EdgeCounter;
+            _context = classMgr?.EdgeCounter;
             while (_context == null)
             {
                 _context = (Counter)DataContext;
-                Thread.Sleep(500);  
+                Thread.Sleep(500);
             }
             _context.PropertyChanged += _context_PropertyChanged;
+            _context.Maxed += OnMaxed;
+        }
+
+        private void OnMaxed()
+        {
+            MaxBorder.Opacity = 1;
         }
 
         private void _context_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            switch (e.PropertyName)
-            {
-                case "Val":
-                    SetEdge(_context.Val);
-                    break;
-                case "Maxed":
-                    MaxBorder.Opacity = 1;
-                    break;
-            }
+            if (e.PropertyName == nameof(Counter.Val)) SetEdge(_context.Val);
         }
 
     }

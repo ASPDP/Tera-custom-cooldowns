@@ -1,5 +1,38 @@
-﻿namespace TCC.Data
+﻿using System;
+
+namespace TCC.Parsing
 {
+    [Flags]
+    public enum ModifierKeys : uint
+    {
+        Alt = 1,
+        Control = 2,
+        Shift = 4,
+        Win = 8,
+        None = 0
+    }
+    public enum LangEnum : uint
+    {
+        INT = 0,
+        KR = 1,
+        USA = 2,
+        JPN = 3,
+        GER = 4,
+        FR = 5,
+        EN = 6,
+        TW = 7,
+        RUS = 8,
+        CHN = 9,
+        THA = 10
+    }
+}
+namespace TCC.Data
+{
+    public enum AbnormalityShape
+    {
+        Round = 0,
+        Square = 1
+    }
     public enum FlightStackType
     {
         None,
@@ -84,27 +117,30 @@
         Money = 211,
         Megaphone = 213,
         GuildAdvertising = 214,
-        SentWhisper = 300, //arbitrary
-        ReceivedWhisper = 301, //arbitrary
-        System = 302, //arbitrary (missing in database)
-        TradeRedirect = 303, //arbitrary
-        Enchant12 = 304, //arbitrary
-        Enchant15 = 305, //arbitrary
-        RaidLeader = 306, //arbitrary
-        Bargain = 307, //arbitrary
-        Apply = 308, //arb
-        Death = 309, //arb
-        Ress = 310, //arb
-        Quest = 311, //arb
-        Friend = 312,//arb
-        Enchant7 = 313, //arbitrary
-        Enchant8 = 314, //arbitrary
-        Enchant9 = 315, //arbitrary
-        WorldBoss = 316, //arb
+        //  custom--
+        SentWhisper = 300,
+        ReceivedWhisper = 301,
+        System = 302, //missing in db
+        TradeRedirect = 303, 
+        Enchant12 = 304,
+        Enchant15 = 305,
+        RaidLeader = 306,
+        Bargain = 307, 
+        Apply = 308, 
+        Death = 309,     
+        Ress = 310,      
+        Quest = 311,     
+        Friend = 312,    
+        Enchant7 = 313,  
+        Enchant8 = 314,  
+        Enchant9 = 315,  
+        WorldBoss = 316, 
         Laurel = 317,
         Damage = 318,
+        Guardian = 319,
         TCC = 1000,
         Twitch = 1001
+        // --custom
     }
 
     public enum Class
@@ -240,6 +276,12 @@
         WhenDim = 2,
         WhenUndim = 3,
         GameDriven = 4
+    }
+
+    public enum ButtonsPosition
+    {
+        Above = 0,
+        Below = 1,
     }
 
     public enum CooldownBarMode

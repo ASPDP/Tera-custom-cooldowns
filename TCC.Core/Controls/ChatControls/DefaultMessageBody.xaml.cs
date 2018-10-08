@@ -1,6 +1,8 @@
-﻿using System.Linq;
+﻿using System.Diagnostics;
+using System.Linq;
 using System.Windows;
 using System.Windows.Input;
+using Dragablz;
 using TCC.Data;
 using TCC.ViewModels;
 
@@ -25,17 +27,14 @@ namespace TCC.Controls.ChatControls
 
         private void PinBtn_OnClick(object sender, RoutedEventArgs e)
         {
+            var dc = DataContext as ChatMessage;
             foreach (var w in ChatWindowManager.Instance.ChatWindows)
             {
                 if (!w.IsMouseOver) continue;
-                var currTabVm = w.TabControl.SelectedItem;
-                var tabVm = w.VM.TabVMs.FirstOrDefault(x =>
-                    ((Tab)x.Content).Messages.Contains(this.DataContext as ChatMessage) && x == currTabVm);
-                if (((Tab)tabVm.Content).PinnedMessage == this.DataContext)
-                {
-                    ((Tab)tabVm?.Content).PinnedMessage = null;
-                }
-                else ((Tab)tabVm?.Content).PinnedMessage = this.DataContext as ChatMessage;
+                var currTabVm = w.TabControl.SelectedItem as HeaderedItemViewModel;
+                var currTab = currTabVm?.Content as Tab;
+                // ReSharper disable once PossibleNullReferenceException
+                currTab.PinnedMessage = currTab.PinnedMessage == dc ? null : dc;
             }
         }
 

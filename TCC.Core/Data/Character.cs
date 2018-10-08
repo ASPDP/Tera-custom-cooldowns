@@ -17,9 +17,10 @@ namespace TCC.Data
         private int _credits;
         private bool _isLoggedIn;
         private bool _isSelected;
-        private int _guardianQuests;
+        private int _claimedGuardianQuests;
         private int _maxGuardianQuests = 40;
         private uint _elleonMarks;
+        private int _clearedGuardianQuests;
 
         public uint Id { get; set; }
         public int Position { get; set; }
@@ -62,6 +63,7 @@ namespace TCC.Data
             }
         }
 
+        public string GuildName { get; set; } = "";
         public void UpdateDungeons(Dictionary<uint, short> dungeonCooldowns)
         {
             foreach (var keyVal in dungeonCooldowns)
@@ -126,9 +128,9 @@ namespace TCC.Data
                 NPC(nameof(IsSelected));
             }
         }
-        public double VanguardWeeklyCompletion => (double)WeekliesDone / (double)SessionManager.MaxWeekly;
-        public double VanguardDailyCompletion => (double)DailiesDone / (double)SessionManager.MaxDaily;
-        public double GuardianCompletion => (double)GuardianQuests / (double)MaxGuardianQuests;
+        public double VanguardWeeklyCompletion => WeekliesDone / (double)SessionManager.MaxWeekly;
+        public double VanguardDailyCompletion => DailiesDone / (double)SessionManager.MaxDaily;
+        public double GuardianCompletion => ClaimedGuardianQuests / (double)MaxGuardianQuests;
 
         public SynchronizedObservableCollection<DungeonCooldown> Dungeons { get; set; }
         public ICollectionView VisibleDungeons { get; set; }
@@ -142,14 +144,14 @@ namespace TCC.Data
         public GearItem Circlet => Gear.ToSyncArray().FirstOrDefault(x => x.Piece == GearPiece.Circlet) ?? new GearItem(0, GearTier.Low, GearPiece.Circlet, 0, 0);
         public ICollectionView Jewels { get; set; }
 
-        public int GuardianQuests
+        public int ClaimedGuardianQuests
         {
-            get => _guardianQuests;
+            get => _claimedGuardianQuests;
             set
             {
-                if (_guardianQuests == value) return;
-                _guardianQuests = value;
-                NPC(nameof(GuardianQuests));
+                if (_claimedGuardianQuests == value) return;
+                _claimedGuardianQuests = value;
+                NPC();
                 NPC(nameof(GuardianCompletion));
             }
         }
@@ -159,7 +161,7 @@ namespace TCC.Data
             {
                 if (_maxGuardianQuests == value) return;
                 _maxGuardianQuests = value;
-                NPC(nameof(MaxGuardianQuests));
+                NPC();
                 NPC(nameof(GuardianCompletion));
             }
         }
@@ -174,11 +176,23 @@ namespace TCC.Data
             }
         }
 
+        public int ClearedGuardianQuests
+        {
+            get => _clearedGuardianQuests;
+            set
+            {
+                if (_clearedGuardianQuests == value) return;
+                _clearedGuardianQuests = value;
+                NPC();
+            }
+
+        }
+
         public Character(string name, Class c, uint id, int pos, Dispatcher d, Laurel l = Laurel.None)
         {
-            _dispatcher = d;
-            Dungeons = new SynchronizedObservableCollection<DungeonCooldown>(_dispatcher);
-            Gear = new SynchronizedObservableCollection<GearItem>(_dispatcher);
+            Dispatcher = d;
+            Dungeons = new SynchronizedObservableCollection<DungeonCooldown>(Dispatcher);
+            Gear = new SynchronizedObservableCollection<GearItem>(Dispatcher);
             Name = name;
             Class = c;
             Laurel = l;
@@ -189,7 +203,7 @@ namespace TCC.Data
             MaxGuardianQuests = SessionManager.MaxGuardianQuests;
             foreach (var dg in SessionManager.DungeonDatabase.DungeonDefs)
             {
-                Dungeons.Add(new DungeonCooldown(dg.Key, _dispatcher));
+                Dungeons.Add(new DungeonCooldown(dg.Key, Dispatcher));
             }
             VisibleDungeons = new CollectionViewSource() { Source = Dungeons }.View;
             VisibleDungeons.Filter = dc => SessionManager.DungeonDatabase.DungeonDefs.ContainsKey(((DungeonCooldown)dc).Id) &&
@@ -221,7 +235,7 @@ namespace TCC.Data
 
         public void ClearGear()
         {
-            Gear = new SynchronizedObservableCollection<GearItem>(_dispatcher);
+            Gear = new SynchronizedObservableCollection<GearItem>(Dispatcher);
         }
 
         public void UpdateGear(List<GearItem> gear)
